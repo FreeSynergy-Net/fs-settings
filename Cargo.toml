@@ -1,0 +1,30 @@
+[workspace]
+resolver = "2"
+members = ["crates/fs-settings-server", "crates/fs-settings-bin"]
+
+[workspace.package]
+version = "0.0.1"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+authors = ["FreeSynergy <support@freesynergy.net>"]
+repository = "https://github.com/FreeSynergy/fs-settings"
+# fs-rpc and fs-components need 1.89.
+rust-version = "1.89"
+
+# One source per library (ADR 0092). PROVISIONAL (probe C, trait-delta fs-settings-store): the three `branch` pins point at the
+# probe branches of parts A and B1/B2 and are replaced by `rev = <head>` (probe compile) and then by tags (cascade, ENTWURF section R).
+[workspace.dependencies]
+fs-types = { git = "https://github.com/FreeSynergy/fs-types", tag = "v0.0.1" }
+# Part A: `v5::setting` (SettingRows, Store::inspect, Error::Newer). Branch pin, provisional.
+fs-objects = { git = "https://github.com/FreeSynergy/fs-objects", branch = "unreviewed/probe-settings-v5", features = ["v5"] }
+# Part B1: the port (SettingsStore, InstanceStore, codes, StoreSuite). Package `fs-settings` of the repo fs-components. Branch pin, provisional.
+fs-settings = { git = "https://github.com/FreeSynergy/fs-components", branch = "unreviewed/probe-settingsstore-v1" }
+# Part B2: client, server skeleton, `ensure_service`. Branch pin, provisional.
+fs-settings-rpc = { git = "https://github.com/FreeSynergy/fs-rpc", branch = "unreviewed/probe-fs-settings-rpc" }
+fs-rpc = { git = "https://github.com/FreeSynergy/fs-rpc", branch = "unreviewed/probe-fs-settings-rpc" }
+capnp = "0.27"
+tokio = { version = "1", features = ["rt", "macros"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+tempfile = "3"
