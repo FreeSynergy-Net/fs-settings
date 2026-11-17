@@ -1,0 +1,29 @@
+[package]
+name = "fs-settings-server"
+description = "FreeSynergy Settings, the service: the settings database behind the port of fs-settings, emergency mode, repair, exchange (TOML/JSON) and the one-time legacy import"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[features]
+# The suite `store` of fs-settings over the database (K-case KC16). Never default: fs-conformance stays out of the normal graph.
+conformance = ["fs-settings/conformance", "dep:async-trait"]
+
+[dependencies]
+fs-types.workspace = true
+fs-objects.workspace = true
+fs-settings.workspace = true
+fs-settings-rpc.workspace = true
+fs-rpc.workspace = true
+capnp.workspace = true
+tokio.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+toml.workspace = true
+async-trait = { version = "0.1", optional = true }
+
+[dev-dependencies]
+tempfile.workspace = true

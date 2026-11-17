@@ -1,0 +1,21 @@
+[package]
+name = "fs-settings-bin"
+description = "FreeSynergy Settings: the command `fs-settings` (serve, instance, export, import, repair)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+rust-version.workspace = true
+
+[[bin]]
+name = "fs-settings"
+path = "src/main.rs"
+
+[dependencies]
+fs-settings-server = { path = "../fs-settings-server" }
+
+[dev-dependencies]
+tempfile.workspace = true
+fs-settings.workspace = true
+fs-settings-rpc.workspace = true
