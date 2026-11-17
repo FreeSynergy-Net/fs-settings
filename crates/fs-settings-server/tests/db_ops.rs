@@ -85,7 +85,7 @@ fn kc7_profiles_from_two_threads_and_a_failing_closure() {
         h.join().unwrap();
     }
     let (set, problems) = store.index();
-    assert!(problems.is_empty());
+    assert_eq!(problems, []);
     let mut ids: Vec<u64> = set
         .names()
         .map(|n| set.get(&ProfileRef::Named(n.clone())).copied().unwrap())

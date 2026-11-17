@@ -103,7 +103,7 @@ fn kc15_serve_write_stop_start() {
     let key = SettingKey::parse("fs.shell.frontend").unwrap();
 
     let child = start(&socket, &data);
-    let client = RpcSettingsStore::open(&socket, &tasks, times.clone());
+    let client = RpcSettingsStore::open(&socket, &tasks, times);
     client
         .write(
             &Scope::Program(tasks.clone()),

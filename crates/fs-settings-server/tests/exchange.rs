@@ -24,7 +24,7 @@ fn exported(store: &DbSettingsStore, format: Format) -> String {
     String::from_utf8(out).unwrap()
 }
 
-fn env<'a>(by: Option<&'a fs_types::Reference>) -> ImportEnv<'a> {
+fn env(by: Option<&fs_types::Reference>) -> ImportEnv<'_> {
     ImportEnv {
         catalog: None,
         by,

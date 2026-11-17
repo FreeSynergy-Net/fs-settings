@@ -116,7 +116,7 @@ impl StoreFixture for DbFixture {
         let Some(target) = made.iter().rev().find(|m| {
             std::ptr::eq(
                 Arc::as_ptr(m).cast::<()>(),
-                (store as *const dyn InstanceStore).cast::<()>(),
+                std::ptr::from_ref(store).cast::<()>(),
             )
         }) else {
             return false;
