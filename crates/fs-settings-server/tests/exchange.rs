@@ -182,7 +182,7 @@ fn kc9_errors_dry_run_and_locks() {
     assert_eq!(text_of(&err, "file").as_deref(), Some("in.toml"));
     assert!(
         err.params()
-            .any(|(k, v)| k == "line" && matches!(v, fs_settings::Param::Number(3))),
+            .any(|(k, v)| k == "line" && matches!(v, fs_settings::coded_stub::Param::Number(3))),
         "{err:?}"
     );
     assert_eq!(store.stamp(), stamp);
@@ -243,7 +243,9 @@ fn kc10_a_fault_in_the_middle_changes_nothing() {
     let text = "[base.values.general]\n\"fs.shell.language\" = \"de\"\n\"fs.shell.style\" = \"calm\"\n[profiles.Arbeit.values.general]\n\"fs.shell.language\" = \"en\"\n";
     let mut step = |i: usize| {
         if i == 1 {
-            Err(fs_settings::Coded::new(SettingCode::WriteFailed))
+            Err(fs_settings::coded_stub::Coded::new(
+                SettingCode::WriteFailed,
+            ))
         } else {
             Ok(())
         }

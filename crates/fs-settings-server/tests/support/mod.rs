@@ -5,7 +5,8 @@
 use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
-use fs_settings::{Coded, ProgramName, Raw, Scope, SettingCode, SettingKey};
+use fs_settings::coded_stub::Coded;
+use fs_settings::{ProgramName, Raw, Scope, SettingCode, SettingKey};
 use fs_settings_server::{DbPlace, DbSettingsStore, NoInstance, fixed_clock};
 use fs_types::{BasicValue, Reference, Utc};
 
@@ -80,7 +81,7 @@ pub fn text_of(code: &Coded<SettingCode>, name: &str) -> Option<String> {
     code.params()
         .find(|(k, _)| *k == name)
         .and_then(|(_, v)| match v {
-            fs_settings::Param::Text(t) => Some(t.clone()),
+            fs_settings::coded_stub::Param::Text(t) => Some(t.clone()),
             _ => None,
         })
 }

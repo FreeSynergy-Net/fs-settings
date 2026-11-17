@@ -6,13 +6,14 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex, RwLock};
 
 use fs_conformance::{Options, run};
+use fs_settings::coded_stub::Coded;
 use fs_settings::suite::{StoreFixture, StoreSuite};
 use fs_settings::{
-    Coded, Health, Instance, InstanceLogEntry, InstanceStore, LockChange, ObjectId, Place,
-    ProfileCode, ProfileSet, Raw, Scope, SettingCode, SettingKey, SettingsStore, Snapshot, Stamp,
-    Stampd,
+    Health, Instance, InstanceLogEntry, InstanceStore, LockChange, Place, ProfileCode, ProfileSet,
+    Raw, Scope, SettingCode, SettingKey, SettingsStore, Snapshot, Stamp, Stampd,
 };
 use fs_settings_server::DbSettingsStore;
+use fs_types::ObjectId;
 
 mod support;
 use support::{db_file, open_instance};
