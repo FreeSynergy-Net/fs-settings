@@ -138,6 +138,7 @@ pub fn serve_words(args: &Args) -> Result<ServeWords, Usage> {
 
 /// One `instance` command.
 #[derive(Clone, Debug, PartialEq, Eq)]
+#[allow(missing_docs)] // the fields are the words of the command; the variant docs say what they are
 pub enum InstanceCmd {
     /// Show defaults and locks.
     Show,
