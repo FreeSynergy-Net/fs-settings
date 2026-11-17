@@ -9,7 +9,7 @@ use fs_conformance::{Options, run};
 use fs_settings::coded_stub::Coded;
 use fs_settings::suite::{StoreFixture, StoreSuite};
 use fs_settings::{
-    Health, Instance, InstanceLogEntry, InstanceStore, LockChange, Place, ProfileCode, ProfileSet,
+    Health, Instance, InstanceLogEntry, InstanceStore, LockChange, Place, ProfileSet,
     Raw, Scope, SettingCode, SettingKey, SettingsStore, Snapshot, Stamp, Stampd,
 };
 use fs_settings_server::DbSettingsStore;
