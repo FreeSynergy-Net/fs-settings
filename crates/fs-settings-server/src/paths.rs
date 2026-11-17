@@ -38,7 +38,11 @@ impl Os {
     /// The system this program runs on.
     #[must_use]
     pub const fn here() -> Self {
-        if cfg!(windows) { Self::Windows } else { Self::Unix }
+        if cfg!(windows) {
+            Self::Windows
+        } else {
+            Self::Unix
+        }
     }
 
     const fn sep(self) -> char {
@@ -52,7 +56,9 @@ impl Os {
         match self {
             Self::Unix => text.starts_with('/'),
             Self::Windows => {
-                text.starts_with("\\\\") || text.as_bytes().get(1) == Some(&b':') && text.as_bytes().get(2) == Some(&b'\\')
+                text.starts_with("\\\\")
+                    || text.as_bytes().get(1) == Some(&b':')
+                        && text.as_bytes().get(2) == Some(&b'\\')
             }
         }
     }
@@ -115,17 +121,21 @@ pub fn resolve_in(place: &DbPlace, os: Os, env: &Env) -> Result<PathBuf, Coded<S
         DbPlace::Convention { instance: true } => match os {
             Os::Unix => Ok(join(os, "/var/lib", &["freesynergy", "instance", DB_NAME])),
             Os::Windows => {
-                let base = env.program_data.as_deref().filter(|p| os.absolute(p)).ok_or_else(no_folder)?;
+                let base = env
+                    .program_data
+                    .as_deref()
+                    .filter(|p| os.absolute(p))
+                    .ok_or_else(no_folder)?;
                 Ok(join(os, base, &["FreeSynergy", "instance", DB_NAME]))
             }
         },
         DbPlace::Convention { instance: false } => match os {
             Os::Unix => {
-                let home_share = env
-                    .home
-                    .as_deref()
-                    .filter(|h| os.absolute(h))
-                    .map(|h| join(os, h, &[".local", "share"]).to_string_lossy().into_owned());
+                let home_share = env.home.as_deref().filter(|h| os.absolute(h)).map(|h| {
+                    join(os, h, &[".local", "share"])
+                        .to_string_lossy()
+                        .into_owned()
+                });
                 let base = env
                     .xdg_data_home
                     .as_deref()
@@ -136,7 +146,11 @@ pub fn resolve_in(place: &DbPlace, os: Os, env: &Env) -> Result<PathBuf, Coded<S
                 Ok(join(os, &base, &["freesynergy", "settings", DB_NAME]))
             }
             Os::Windows => {
-                let base = env.local_app_data.as_deref().filter(|p| os.absolute(p)).ok_or_else(no_folder)?;
+                let base = env
+                    .local_app_data
+                    .as_deref()
+                    .filter(|p| os.absolute(p))
+                    .ok_or_else(no_folder)?;
                 Ok(join(os, base, &["FreeSynergy", "settings", DB_NAME]))
             }
         },

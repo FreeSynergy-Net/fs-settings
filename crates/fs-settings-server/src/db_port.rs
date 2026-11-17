@@ -7,8 +7,8 @@ use crate::db_instance::lock_error;
 use crate::db_store::DbSettingsStore;
 use crate::error_map::{from_profile_code, map, profile};
 use crate::ports::{
-    Coded, Health, IndexRows, Instance, Lock, Place, ProfileCode, ProfileSet, Raw, Scope, SettingCode, SettingKey, SettingsStore,
-    Snapshot, Stamp, Writer, index_step_ok, params,
+    Coded, Health, IndexRows, Instance, Lock, Place, ProfileCode, ProfileSet, Raw, Scope,
+    SettingCode, SettingKey, SettingsStore, Snapshot, Stamp, Writer, index_step_ok, params,
 };
 use crate::prim::{place_row, scope_row, to_prim, to_raw};
 
@@ -53,11 +53,17 @@ impl SettingsStore for DbSettingsStore {
     }
 
     fn instance(&self) -> Instance {
-        if self.instance_mode { self.own_instance() } else { self.source.instance() }
+        if self.instance_mode {
+            self.own_instance()
+        } else {
+            self.source.instance()
+        }
     }
 
     fn profile(&self, scope: &Scope, place: Place, profile_no: u64) -> Snapshot {
-        let Some(store) = &self.store else { return Snapshot::default() };
+        let Some(store) = &self.store else {
+            return Snapshot::default();
+        };
         let read = async {
             let rows = self.rows(store).await?;
             rows.values(profile_id(profile_no)?, scope_row(scope), place_row(place))
@@ -66,11 +72,21 @@ impl SettingsStore for DbSettingsStore {
         };
         match self.run(read) {
             Ok(rows) => snapshot_of(rows),
-            Err(problem) => Snapshot { values: BTreeMap::new(), problems: vec![problem] },
+            Err(problem) => Snapshot {
+                values: BTreeMap::new(),
+                problems: vec![problem],
+            },
         }
     }
 
-    fn write(&self, scope: &Scope, place: Place, profile_no: u64, key: &SettingKey, raw: Option<&Raw>) -> Result<(), Coded<SettingCode>> {
+    fn write(
+        &self,
+        scope: &Scope,
+        place: Place,
+        profile_no: u64,
+        key: &SettingKey,
+        raw: Option<&Raw>,
+    ) -> Result<(), Coded<SettingCode>> {
         let store = self.writable("person")?;
         // The second guard next to `Settings::save` (decision Q5): the lock as it is NOW.
         if let Some(lock) = self.instance().locks.get(key) {
@@ -83,10 +99,18 @@ impl SettingsStore for DbSettingsStore {
         };
         let write = async {
             let rows = self.rows(store).await?;
-            rows.put(id, scope_row(scope), place_row(place), key.as_str(), prim.as_ref(), Writer { by: None, via }, at)
-                .await
-                .map(|_| ())
-                .map_err(|e| lock_error(self, &e, key))
+            rows.put(
+                id,
+                scope_row(scope),
+                place_row(place),
+                key.as_str(),
+                prim.as_ref(),
+                Writer { by: None, via },
+                at,
+            )
+            .await
+            .map(|_| ())
+            .map_err(|e| lock_error(self, &e, key))
         };
         self.run(write)
     }
@@ -96,13 +120,18 @@ impl SettingsStore for DbSettingsStore {
         let (id, at) = (profile_id(profile_no)?, (self.now)());
         let clear = async {
             let rows = self.rows(store).await?;
-            rows.clear_profile(id, scope_row(scope), at).await.map(|_| ()).map_err(|e| map(&e, &self.file, None))
+            rows.clear_profile(id, scope_row(scope), at)
+                .await
+                .map(|_| ())
+                .map_err(|e| map(&e, &self.file, None))
         };
         self.run(clear)
     }
 
     fn index(&self) -> (ProfileSet<u64>, Vec<Coded<SettingCode>>) {
-        let Some(store) = &self.store else { return (ProfileSet::new(0), Vec::new()) };
+        let Some(store) = &self.store else {
+            return (ProfileSet::new(0), Vec::new());
+        };
         let read = async {
             let rows = self.rows(store).await?;
             rows.index().await.map_err(|e| map(&e, &self.file, None))
@@ -114,19 +143,25 @@ impl SettingsStore for DbSettingsStore {
     }
 
     /// One transaction of the rows: `f` sees the index as stored now; an error of `f` or a refused step changes nothing.
-    fn update_index(&self, f: &mut dyn FnMut(&mut ProfileSet<u64>) -> IndexResult) -> Result<ProfileSet<u64>, Coded<SettingCode>> {
+    fn update_index(
+        &self,
+        f: &mut dyn FnMut(&mut ProfileSet<u64>) -> IndexResult,
+    ) -> Result<ProfileSet<u64>, Coded<SettingCode>> {
         let store = self.writable("person")?;
         let at = (self.now)();
-        let mut step = |ix: &IndexRows| -> Result<Vec<crate::ports::IndexChange>, Coded<SettingCode>> {
-            let old = to_set(ix)?;
-            let mut new = old.clone();
-            f(&mut new).map_err(from_profile_code)?;
-            index_step_ok(&old, &new)?;
-            Ok(changes(&old, &new))
-        };
+        let mut step =
+            |ix: &IndexRows| -> Result<Vec<crate::ports::IndexChange>, Coded<SettingCode>> {
+                let old = to_set(ix)?;
+                let mut new = old.clone();
+                f(&mut new).map_err(from_profile_code)?;
+                index_step_ok(&old, &new)?;
+                Ok(changes(&old, &new))
+            };
         let change = async {
             let rows = self.rows(store).await?;
-            rows.change_index(at, &mut step).await.map_err(|e| map(&e, &self.file, None))
+            rows.change_index(at, &mut step)
+                .await
+                .map_err(|e| map(&e, &self.file, None))
         };
         let stored = self.run(change)??;
         to_set(&stored)

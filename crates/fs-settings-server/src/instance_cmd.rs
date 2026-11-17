@@ -3,7 +3,8 @@
 //! is only filled into `Stampd` and ignored by the service.
 
 use crate::ports::{
-    BasicValue, Coded, InstanceStore, LockChange, ObjectId, Raw, Reference, SettingCode, SettingKey, Stampd, Utc, params,
+    BasicValue, Coded, InstanceStore, LockChange, ObjectId, Raw, Reference, SettingCode,
+    SettingKey, Stampd, Utc, params,
 };
 use crate::reply::Reply;
 use crate::words::InstanceCmd;
@@ -14,7 +15,9 @@ pub fn infer_raw(text: &str) -> Raw {
     match text {
         "true" => Raw::Bool(true),
         "false" => Raw::Bool(false),
-        _ => text.parse::<i64>().map_or_else(|_| Raw::Str(text.to_owned()), Raw::Int),
+        _ => text
+            .parse::<i64>()
+            .map_or_else(|_| Raw::Str(text.to_owned()), Raw::Int),
     }
 }
 
@@ -44,7 +47,8 @@ fn id_parse(text: &str) -> Option<ObjectId> {
 }
 
 fn who(by: &str, now: Utc) -> Result<Stampd, Coded<SettingCode>> {
-    let by = Reference::parse(by).map_err(|_| Coded::new(SettingCode::KeyInvalid).with_text(params::BY, by))?;
+    let by = Reference::parse(by)
+        .map_err(|_| Coded::new(SettingCode::KeyInvalid).with_text(params::BY, by))?;
     Ok(Stampd { by, at: now })
 }
 
@@ -67,26 +71,64 @@ pub fn run_instance(cmd: &InstanceCmd, store: &dyn InstanceStore, now: Utc) -> R
         Ok(match cmd {
             InstanceCmd::Show => {
                 let layer = store.instance();
-                let mut lines: Vec<String> = layer.values.values.iter().map(|(k, v)| format!("{}={}", k.as_str(), shown(v))).collect();
-                lines.extend(layer.locks.iter().map(|(k, l)| format!("locked {} reason={} by={}", k.as_str(), l.reason, l.locked_by)));
+                let mut lines: Vec<String> = layer
+                    .values
+                    .values
+                    .iter()
+                    .map(|(k, v)| format!("{}={}", k.as_str(), shown(v)))
+                    .collect();
+                lines.extend(layer.locks.iter().map(|(k, l)| {
+                    format!(
+                        "locked {} reason={} by={}",
+                        k.as_str(),
+                        l.reason,
+                        l.locked_by
+                    )
+                }));
                 Reply::done(lines)
             }
-            InstanceCmd::Set { key: k, value, by } => {
-                outcome(store.write_instance(&key(k)?, Some(&infer_raw(value)), &who(by, now)?), "set", k)
-            }
-            InstanceCmd::Clear { key: k, by } => outcome(store.write_instance(&key(k)?, None, &who(by, now)?), "cleared", k),
-            InstanceCmd::Lock { key: k, value, reason, by } => {
-                let change = LockChange::Lock { value: infer_raw(value), reason: reason.clone() };
-                outcome(store.write_lock(&key(k)?, &change, &who(by, now)?), "locked", k)
+            InstanceCmd::Set { key: k, value, by } => outcome(
+                store.write_instance(&key(k)?, Some(&infer_raw(value)), &who(by, now)?),
+                "set",
+                k,
+            ),
+            InstanceCmd::Clear { key: k, by } => outcome(
+                store.write_instance(&key(k)?, None, &who(by, now)?),
+                "cleared",
+                k,
+            ),
+            InstanceCmd::Lock {
+                key: k,
+                value,
+                reason,
+                by,
+            } => {
+                let change = LockChange::Lock {
+                    value: infer_raw(value),
+                    reason: reason.clone(),
+                };
+                outcome(
+                    store.write_lock(&key(k)?, &change, &who(by, now)?),
+                    "locked",
+                    k,
+                )
             }
             InstanceCmd::Unlock { key: k, reason, by } => {
-                let change = LockChange::Unlock { reason: reason.clone() };
-                outcome(store.write_lock(&key(k)?, &change, &who(by, now)?), "unlocked", k)
+                let change = LockChange::Unlock {
+                    reason: reason.clone(),
+                };
+                outcome(
+                    store.write_lock(&key(k)?, &change, &who(by, now)?),
+                    "unlocked",
+                    k,
+                )
             }
             InstanceCmd::Log { after, size } => {
                 let after = match after {
                     None => None,
-                    Some(text) => Some(id_parse(text).ok_or_else(|| Coded::new(SettingCode::KeyInvalid).with_text(params::KEY, text.clone()))?),
+                    Some(text) => Some(id_parse(text).ok_or_else(|| {
+                        Coded::new(SettingCode::KeyInvalid).with_text(params::KEY, text.clone())
+                    })?),
                 };
                 Reply::done(
                     store
@@ -101,7 +143,10 @@ pub fn run_instance(cmd: &InstanceCmd, store: &dyn InstanceStore, now: Utc) -> R
                                 e.os_user.as_deref().unwrap_or("-"),
                                 e.action,
                                 e.key.as_str(),
-                                e.reason.as_ref().map(|r| format!(" reason={r}")).unwrap_or_default()
+                                e.reason
+                                    .as_ref()
+                                    .map(|r| format!(" reason={r}"))
+                                    .unwrap_or_default()
                             )
                         })
                         .collect(),
@@ -111,4 +156,3 @@ pub fn run_instance(cmd: &InstanceCmd, store: &dyn InstanceStore, now: Utc) -> R
     })();
     result.unwrap_or_else(|code| Reply::failed(&code))
 }
-

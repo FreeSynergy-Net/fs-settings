@@ -2,7 +2,9 @@
 //! and as the rows know it (`IndexRows`, `IndexChange`). Pure functions; tested without a database.
 
 use crate::error_map::from_profile_code;
-use crate::ports::{Coded, IndexChange, IndexRows, ProfileName, ProfileRef, ProfileSet, SettingCode};
+use crate::ports::{
+    Coded, IndexChange, IndexRows, ProfileName, ProfileRef, ProfileSet, SettingCode,
+};
 
 fn id_of(set: &ProfileSet<u64>, r: &ProfileRef) -> u64 {
     set.get(r).copied().unwrap_or(0)
@@ -14,7 +16,11 @@ fn id_of(set: &ProfileSet<u64>, r: &ProfileRef) -> u64 {
 /// `profile{..}` when a stored name is not a legal profile name (a damaged row, said, never skipped).
 pub fn to_set(ix: &IndexRows) -> Result<ProfileSet<u64>, Coded<SettingCode>> {
     let mut set = ProfileSet::new(u64::try_from(ix.top).unwrap_or(0));
-    let mut live: Vec<_> = ix.profiles.iter().filter(|p| p.deleted.is_none() && p.id > 0).collect();
+    let mut live: Vec<_> = ix
+        .profiles
+        .iter()
+        .filter(|p| p.deleted.is_none() && p.id > 0)
+        .collect();
     live.sort_by_key(|p| p.id);
     for p in &live {
         let name = ProfileName::new(p.name.as_deref().unwrap_or("")).map_err(from_profile_code)?;
@@ -25,8 +31,10 @@ pub fn to_set(ix: &IndexRows) -> Result<ProfileSet<u64>, Coded<SettingCode>> {
     }
     if ix.active > 0 {
         if let Some(p) = live.iter().find(|p| p.id == ix.active) {
-            let name = ProfileName::new(p.name.as_deref().unwrap_or("")).map_err(from_profile_code)?;
-            set.switch(ProfileRef::Named(name)).map_err(from_profile_code)?;
+            let name =
+                ProfileName::new(p.name.as_deref().unwrap_or("")).map_err(from_profile_code)?;
+            set.switch(ProfileRef::Named(name))
+                .map_err(from_profile_code)?;
         }
     }
     Ok(set)
@@ -66,17 +74,27 @@ pub fn changes(old: &ProfileSet<u64>, new: &ProfileSet<u64>) -> Vec<IndexChange>
     for (id, name) in &after {
         if let Some((_, was)) = before.iter().find(|(i, _)| i == id) {
             if was.as_str() != name.as_str() {
-                out.push(IndexChange::Rename { id: signed(*id), name: name.as_str().to_owned(), name_key: key_of(name) });
+                out.push(IndexChange::Rename {
+                    id: signed(*id),
+                    name: name.as_str().to_owned(),
+                    name_key: key_of(name),
+                });
             }
         }
     }
     for (id, name) in &after {
         if !before.iter().any(|(i, _)| i == id) {
-            out.push(IndexChange::Create { id: signed(*id), name: name.as_str().to_owned(), name_key: key_of(name) });
+            out.push(IndexChange::Create {
+                id: signed(*id),
+                name: name.as_str().to_owned(),
+                name_key: key_of(name),
+            });
         }
     }
     if active_id(old) != active_id(new) {
-        out.push(IndexChange::Switch { id: signed(active_id(new)) });
+        out.push(IndexChange::Switch {
+            id: signed(active_id(new)),
+        });
     }
     out
 }

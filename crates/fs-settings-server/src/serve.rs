@@ -39,7 +39,11 @@ pub enum ServeError {
 /// The socket name of the person service and of the instance service.
 #[must_use]
 pub fn socket_program(instance: bool) -> &'static str {
-    if instance { "settings-instance" } else { "settings" }
+    if instance {
+        "settings-instance"
+    } else {
+        "settings"
+    }
 }
 
 /// The socket: `--socket` or the convention of fs-rpc.
@@ -51,7 +55,9 @@ pub fn socket_of(words: &ServeWords) -> Result<PathBuf, Coded<SettingCode>> {
         .socket
         .clone()
         .or_else(|| fs_rpc::default_socket(socket_program(words.instance)))
-        .ok_or_else(|| Coded::new(SettingCode::NoFolder).with_text(crate::ports::params::WHICH, "socket"))
+        .ok_or_else(|| {
+            Coded::new(SettingCode::NoFolder).with_text(crate::ports::params::WHICH, "socket")
+        })
 }
 
 /// One report line per old file, for stderr (a code line or `imported`/`kept`).
@@ -60,9 +66,15 @@ pub fn legacy_lines(lines: &[LegacyLine]) -> Vec<String> {
     lines
         .iter()
         .map(|l| match l {
-            LegacyLine::Imported { file, key } => format!("legacy imported key={key} file={}", file.display()),
-            LegacyLine::Kept { file, key } => format!("legacy kept key={key} file={}", file.display()),
-            LegacyLine::Problem { file, code } => format!("legacy {} file={}", code_line(code), file.display()),
+            LegacyLine::Imported { file, key } => {
+                format!("legacy imported key={key} file={}", file.display())
+            }
+            LegacyLine::Kept { file, key } => {
+                format!("legacy kept key={key} file={}", file.display())
+            }
+            LegacyLine::Problem { file, code } => {
+                format!("legacy {} file={}", code_line(code), file.display())
+            }
         })
         .collect()
 }
@@ -71,9 +83,21 @@ pub fn legacy_lines(lines: &[LegacyLine]) -> Vec<String> {
 ///
 /// # Errors
 /// As [`DbSettingsStore::open`].
-pub fn open_store(words: &ServeWords, legacy: &LegacyEnv) -> Result<(DbSettingsStore, Vec<LegacyLine>), Coded<SettingCode>> {
-    let store = DbSettingsStore::open(&words.place, words.instance, Box::new(NoInstance), system_clock())?;
-    let lines = if store.was_created() && !words.instance { import_legacy(&store, legacy) } else { Vec::new() };
+pub fn open_store(
+    words: &ServeWords,
+    legacy: &LegacyEnv,
+) -> Result<(DbSettingsStore, Vec<LegacyLine>), Coded<SettingCode>> {
+    let store = DbSettingsStore::open(
+        &words.place,
+        words.instance,
+        Box::new(NoInstance),
+        system_clock(),
+    )?;
+    let lines = if store.was_created() && !words.instance {
+        import_legacy(&store, legacy)
+    } else {
+        Vec::new()
+    };
     Ok((store, lines))
 }
 
@@ -82,12 +106,14 @@ pub fn open_store(words: &ServeWords, legacy: &LegacyEnv) -> Result<(DbSettingsS
 /// # Errors
 /// [`ServeError`].
 pub fn serve(args: &[String]) -> Result<(), ServeError> {
-    let parsed = Args::parse(args).map_err(|u| ServeError::Usage(format!("usage word={}", u.word)))?;
+    let parsed =
+        Args::parse(args).map_err(|u| ServeError::Usage(format!("usage word={}", u.word)))?;
     if parsed.flag("--help") {
         println!("{HELP}");
         return Ok(());
     }
-    let words = serve_words(&parsed).map_err(|u| ServeError::Usage(format!("usage word={}", u.word)))?;
+    let words =
+        serve_words(&parsed).map_err(|u| ServeError::Usage(format!("usage word={}", u.word)))?;
     let failed = |c: &Coded<SettingCode>| ServeError::Failed(code_line(c));
     let socket = socket_of(&words).map_err(|c| failed(&c))?;
     let (store, lines) = open_store(&words, &LegacyEnv::from_process()).map_err(|c| failed(&c))?;
@@ -108,6 +134,8 @@ pub fn serve(args: &[String]) -> Result<(), ServeError> {
         now: system_clock(),
     };
     let identity = ServerIdentity::new(PROGRAM, env!("CARGO_PKG_VERSION"));
-    run_until_signal_as(&socket, identity, move || async move { Ok(service.into_client()) })
-        .map_err(|e| ServeError::Failed(format!("serve-failed cause={e}")))
+    run_until_signal_as(&socket, identity, move || async move {
+        Ok(service.into_client())
+    })
+    .map_err(|e| ServeError::Failed(format!("serve-failed cause={e}")))
 }

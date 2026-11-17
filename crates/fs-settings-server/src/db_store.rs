@@ -37,7 +37,11 @@ struct Started {
 
 impl Started {
     fn emergency(code: Coded<SettingCode>) -> Self {
-        Self { store: None, health: Health::Defaults(vec![code]), created: false }
+        Self {
+            store: None,
+            health: Health::Defaults(vec![code]),
+            created: false,
+        }
     }
 }
 
@@ -51,7 +55,12 @@ impl DbSettingsStore {
     ///
     /// # Errors
     /// Only when the operating system refuses to create the runtime (`store-broken{cause=open}`).
-    pub fn open(place: &DbPlace, instance: bool, source: Box<dyn InstanceSource>, now: Clock) -> Result<Self, Coded<SettingCode>> {
+    pub fn open(
+        place: &DbPlace,
+        instance: bool,
+        source: Box<dyn InstanceSource>,
+        now: Clock,
+    ) -> Result<Self, Coded<SettingCode>> {
         let rt = tokio::runtime::Builder::new_current_thread()
             .build()
             .map_err(|_| broken(Path::new(""), "open"))?;
@@ -97,7 +106,10 @@ impl DbSettingsStore {
 
     /// Runs `f` to the end on the store's runtime (one caller at a time).
     pub(crate) fn run<T>(&self, f: impl Future<Output = T>) -> T {
-        let _turn = self.gate.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
+        let _turn = self
+            .gate
+            .lock()
+            .unwrap_or_else(std::sync::PoisonError::into_inner);
         self.rt.block_on(f)
     }
 
@@ -109,8 +121,13 @@ impl DbSettingsStore {
     }
 
     /// Opens the rows on `store` (registered at start) and maps a failure.
-    pub(crate) async fn rows<'s>(&self, store: &'s Store) -> Result<SettingRows<'s>, Coded<SettingCode>> {
-        SettingRows::new(store).await.map_err(|e| map(&e, &self.file, None))
+    pub(crate) async fn rows<'s>(
+        &self,
+        store: &'s Store,
+    ) -> Result<SettingRows<'s>, Coded<SettingCode>> {
+        SettingRows::new(store)
+            .await
+            .map_err(|e| map(&e, &self.file, None))
     }
 }
 
@@ -129,7 +146,11 @@ fn start(rt: &tokio::runtime::Runtime, file: &Path, now: &Clock) -> Started {
         }
         Ok(Inspect::Fits { .. }) => open_rows(rt, path, file, now, false),
         Ok(Inspect::Newer { found, known }) => Started::emergency(map(
-            &crate::ports::RowsError::Newer { domain: DOMAIN.prefix.to_owned(), found, known },
+            &crate::ports::RowsError::Newer {
+                domain: DOMAIN.prefix.to_owned(),
+                found,
+                known,
+            },
             file,
             None,
         )),
@@ -138,9 +159,19 @@ fn start(rt: &tokio::runtime::Runtime, file: &Path, now: &Clock) -> Started {
     }
 }
 
-fn open_rows(rt: &tokio::runtime::Runtime, path: &str, file: &Path, now: &Clock, created: bool) -> Started {
+fn open_rows(
+    rt: &tokio::runtime::Runtime,
+    path: &str,
+    file: &Path,
+    now: &Clock,
+    created: bool,
+) -> Started {
     match rt.block_on(SettingRows::open(path, now())) {
-        Ok(store) => Started { store: Some(store), health: Health::Ok, created },
+        Ok(store) => Started {
+            store: Some(store),
+            health: Health::Ok,
+            created,
+        },
         Err(e) => Started::emergency(map(&e, file, None)),
     }
 }

@@ -13,7 +13,10 @@ use crate::serve::PROGRAM;
 /// The limits of the CLI's calls, from one place ("einstellbar statt fest": these are the defaults of the words, not facts).
 #[must_use]
 pub fn times() -> ClientTimes {
-    ClientTimes { call: Duration::from_secs(10), retry: Duration::from_secs(2) }
+    ClientTimes {
+        call: Duration::from_secs(10),
+        retry: Duration::from_secs(2),
+    }
 }
 
 /// Makes sure the service for `socket` runs; starts `fs-settings serve [--instance] --socket S` if not.
@@ -22,7 +25,8 @@ pub fn times() -> ClientTimes {
 /// `store-unreachable{socket, cause}` (from fs-settings-rpc).
 pub fn ensure(socket: &Path, instance: bool) -> Result<(), Coded<SettingCode>> {
     let me = std::env::current_exe().map_err(|_| {
-        Coded::new(SettingCode::StoreUnreachable).with_text(crate::ports::params::SOCKET, socket.to_string_lossy())
+        Coded::new(SettingCode::StoreUnreachable)
+            .with_text(crate::ports::params::SOCKET, socket.to_string_lossy())
     })?;
     let mut words: Vec<std::ffi::OsString> = vec!["serve".into()];
     if instance {

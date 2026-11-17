@@ -5,8 +5,8 @@ use std::path::Path;
 use super::doc::{Doc, Map, Scopes};
 use super::import::ImportEnv;
 use crate::ports::{
-    BasicValue, Coded, InstanceStore, Layer, Place, ProfileName, ProfileRef, ProgramName, Raw, Reference, Scope, SettingCode, SettingKey,
-    SettingsStore, params,
+    BasicValue, Coded, InstanceStore, Layer, Place, ProfileName, ProfileRef, ProgramName, Raw,
+    Reference, Scope, SettingCode, SettingKey, SettingsStore, params,
 };
 
 /// Whose profile a value goes into.
@@ -19,9 +19,22 @@ pub(super) enum Target {
 /// One write.
 #[derive(Clone, Debug)]
 pub(super) enum Op {
-    Value { target: Target, scope: Scope, place: Place, key: SettingKey, raw: Raw },
-    Instance { key: SettingKey, raw: Raw },
-    Lock { key: SettingKey, raw: Raw, reason: String },
+    Value {
+        target: Target,
+        scope: Scope,
+        place: Place,
+        key: SettingKey,
+        raw: Raw,
+    },
+    Instance {
+        key: SettingKey,
+        raw: Raw,
+    },
+    Lock {
+        key: SettingKey,
+        raw: Raw,
+        reason: String,
+    },
 }
 
 #[derive(Default)]
@@ -41,7 +54,9 @@ pub(super) fn invalid(file: &Path, line: u64, cause: &str) -> Coded<SettingCode>
 }
 
 fn conflict(key: &SettingKey, cause: &str) -> Coded<SettingCode> {
-    Coded::new(SettingCode::ImportConflict).with_text(params::KEY, key.as_str()).with_text(params::CAUSE, cause)
+    Coded::new(SettingCode::ImportConflict)
+        .with_text(params::KEY, key.as_str())
+        .with_text(params::CAUSE, cause)
 }
 
 struct Ctx<'a> {
@@ -73,22 +88,43 @@ impl Ctx<'_> {
         true
     }
 
-    fn scopes(&mut self, target: &Target, scopes: &Scopes, place: Place) -> Result<(), Coded<SettingCode>> {
+    fn scopes(
+        &mut self,
+        target: &Target,
+        scopes: &Scopes,
+        place: Place,
+    ) -> Result<(), Coded<SettingCode>> {
         self.map(target, Scope::General, place, &scopes.general)?;
         for (program, map) in &scopes.programs {
-            let name = ProgramName::new(program).map_err(|_| invalid(self.file, 0, "program-invalid"))?;
+            let name =
+                ProgramName::new(program).map_err(|_| invalid(self.file, 0, "program-invalid"))?;
             self.map(target, Scope::Program(name), place, map)?;
         }
         Ok(())
     }
 
-    fn map(&mut self, target: &Target, scope: Scope, place: Place, map: &Map) -> Result<(), Coded<SettingCode>> {
+    fn map(
+        &mut self,
+        target: &Target,
+        scope: Scope,
+        place: Place,
+        map: &Map,
+    ) -> Result<(), Coded<SettingCode>> {
         let locks = self.store.instance().locks;
         let id = match target {
             Target::Base => Some(0),
-            Target::Named(n) => self.store.index().0.get(&ProfileRef::Named(n.clone())).copied(),
+            Target::Named(n) => self
+                .store
+                .index()
+                .0
+                .get(&ProfileRef::Named(n.clone()))
+                .copied(),
         };
-        let layer = if matches!(target, Target::Base) { Layer::Person } else { Layer::NamedPerson };
+        let layer = if matches!(target, Target::Base) {
+            Layer::Person
+        } else {
+            Layer::NamedPerson
+        };
         for (text, v) in map {
             let (key, raw) = (self.key(text)?, Raw::from(v));
             if locks.contains_key(&key) {
@@ -98,28 +134,49 @@ impl Ctx<'_> {
             if !self.declared(&key, &raw, layer) {
                 continue;
             }
-            let there = id.and_then(|i| self.store.profile(&scope, place, i).values.get(&key).cloned());
+            let there = id.and_then(|i| {
+                self.store
+                    .profile(&scope, place, i)
+                    .values
+                    .get(&key)
+                    .cloned()
+            });
             if there.as_ref() == Some(&raw) {
                 self.plan.same += 1;
             } else {
-                self.plan.ops.push(Op::Value { target: target.clone(), scope: scope.clone(), place, key, raw });
+                self.plan.ops.push(Op::Value {
+                    target: target.clone(),
+                    scope: scope.clone(),
+                    place,
+                    key,
+                    raw,
+                });
             }
         }
         Ok(())
     }
 
-    fn profile(&mut self, target: &Target, body: &super::doc::Body) -> Result<(), Coded<SettingCode>> {
+    fn profile(
+        &mut self,
+        target: &Target,
+        body: &super::doc::Body,
+    ) -> Result<(), Coded<SettingCode>> {
         self.scopes(target, &body.values, Place::Profile)?;
         if self.env.device {
             self.scopes(target, &body.device, Place::Device)
         } else {
-            let n = body.device.general.len() + body.device.programs.values().map(Map::len).sum::<usize>();
+            let n = body.device.general.len()
+                + body.device.programs.values().map(Map::len).sum::<usize>();
             self.plan.skipped_device += u32::try_from(n).unwrap_or(u32::MAX);
             Ok(())
         }
     }
 
-    fn instance(&mut self, doc: &Doc, instance: Option<&dyn InstanceStore>) -> Result<(), Coded<SettingCode>> {
+    fn instance(
+        &mut self,
+        doc: &Doc,
+        instance: Option<&dyn InstanceStore>,
+    ) -> Result<(), Coded<SettingCode>> {
         for (text, lock) in &doc.locks {
             if !doc.instance.contains_key(text) {
                 return Err(invalid(self.file, 0, "lock-without-value"));
@@ -130,7 +187,11 @@ impl Ctx<'_> {
         for (text, v) in &doc.instance {
             let (key, raw) = (self.key(text)?, Raw::from(v));
             let Some(layer) = there.as_ref().filter(|_| self.env.by.is_some()) else {
-                let cause = if instance.is_none() { "no-instance" } else { "no-actor" };
+                let cause = if instance.is_none() {
+                    "no-instance"
+                } else {
+                    "no-actor"
+                };
                 self.plan.refused.push(conflict(&key, cause));
                 continue;
             };
@@ -143,7 +204,11 @@ impl Ctx<'_> {
             match (wants_lock, held) {
                 (Some(l), Some(h)) if same_value && h.reason == l.reason => self.plan.same += 1,
                 (_, Some(_)) => self.plan.refused.push(conflict(&key, "locked")),
-                (Some(l), None) => self.plan.ops.push(Op::Lock { key, raw, reason: l.reason.clone() }),
+                (Some(l), None) => self.plan.ops.push(Op::Lock {
+                    key,
+                    raw,
+                    reason: l.reason.clone(),
+                }),
                 (None, None) if same_value => self.plan.same += 1,
                 (None, None) => self.plan.ops.push(Op::Instance { key, raw }),
             }
@@ -160,7 +225,12 @@ pub(super) fn plan(
     env: &ImportEnv<'_>,
     file: &Path,
 ) -> Result<Plan, Coded<SettingCode>> {
-    let mut ctx = Ctx { file, store, env, plan: Plan::default() };
+    let mut ctx = Ctx {
+        file,
+        store,
+        env,
+        plan: Plan::default(),
+    };
     ctx.profile(&Target::Base, &doc.base)?;
     for (name, body) in &doc.profiles {
         let n = ProfileName::new(name).map_err(|_| invalid(file, 0, "profile-name"))?;

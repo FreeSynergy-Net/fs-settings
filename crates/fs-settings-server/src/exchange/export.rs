@@ -6,7 +6,9 @@ use std::path::Path;
 
 use super::Format;
 use super::doc::{Body, Doc, LockDoc, Map, Scopes, V};
-use crate::ports::{Coded, Place, ProfileRef, ProgramName, Scope, SettingCode, SettingsStore, params};
+use crate::ports::{
+    Coded, Place, ProfileRef, ProgramName, Scope, SettingCode, SettingsStore, params,
+};
 
 /// What to export.
 #[derive(Clone, Debug)]
@@ -31,10 +33,21 @@ fn programs_of(what: &ExportScope) -> (bool, Vec<ProgramName>, bool) {
     }
 }
 
-fn collect(store: &dyn SettingsStore, profile: u64, general: bool, programs: &[ProgramName], place: Place) -> Scopes {
+fn collect(
+    store: &dyn SettingsStore,
+    profile: u64,
+    general: bool,
+    programs: &[ProgramName],
+    place: Place,
+) -> Scopes {
     let mut out = Scopes::default();
     let texts = |scope: &Scope| -> Map {
-        store.profile(scope, place, profile).values.iter().map(|(k, raw)| (k.as_str().to_owned(), V::from(raw))).collect()
+        store
+            .profile(scope, place, profile)
+            .values
+            .iter()
+            .map(|(k, raw)| (k.as_str().to_owned(), V::from(raw)))
+            .collect()
     };
     if general {
         out.general = texts(&Scope::General);
@@ -48,10 +61,20 @@ fn collect(store: &dyn SettingsStore, profile: u64, general: bool, programs: &[P
     out
 }
 
-fn body(store: &dyn SettingsStore, profile: u64, general: bool, programs: &[ProgramName], device: bool) -> Body {
+fn body(
+    store: &dyn SettingsStore,
+    profile: u64,
+    general: bool,
+    programs: &[ProgramName],
+    device: bool,
+) -> Body {
     Body {
         values: collect(store, profile, general, programs, Place::Profile),
-        device: if device { collect(store, profile, general, programs, Place::Device) } else { Scopes::default() },
+        device: if device {
+            collect(store, profile, general, programs, Place::Device)
+        } else {
+            Scopes::default()
+        },
     }
 }
 
@@ -67,7 +90,11 @@ pub fn export(
     label: &Path,
     out: &mut dyn Write,
 ) -> Result<(), Coded<SettingCode>> {
-    let failed = |kind: &str| Coded::new(SettingCode::ExportFailed).with_text(params::FILE, label.to_string_lossy()).with_text(params::KIND, kind);
+    let failed = |kind: &str| {
+        Coded::new(SettingCode::ExportFailed)
+            .with_text(params::FILE, label.to_string_lossy())
+            .with_text(params::KIND, kind)
+    };
     let (person, programs, instance) = programs_of(what);
     let mut doc = Doc::default();
     let general = person;
@@ -75,7 +102,10 @@ pub fn export(
         doc.base = body(store, 0, general, &programs, device);
         let (set, _) = store.index();
         for name in set.names() {
-            let id = set.get(&ProfileRef::Named(name.clone())).copied().unwrap_or(0);
+            let id = set
+                .get(&ProfileRef::Named(name.clone()))
+                .copied()
+                .unwrap_or(0);
             let b = body(store, id, general, &programs, device);
             if !b.is_empty() {
                 doc.profiles.insert(name.as_str().to_owned(), b);
@@ -84,13 +114,25 @@ pub fn export(
     }
     if instance {
         let layer = store.instance();
-        doc.instance = layer.values.values.iter().map(|(k, raw)| (k.as_str().to_owned(), V::from(raw))).collect();
+        doc.instance = layer
+            .values
+            .values
+            .iter()
+            .map(|(k, raw)| (k.as_str().to_owned(), V::from(raw)))
+            .collect();
         let locks: BTreeMap<String, LockDoc> = layer
             .locks
             .iter()
             .map(|(k, l)| {
                 let at = l.locked_at.to_rfc3339().unwrap_or_default();
-                (k.as_str().to_owned(), LockDoc { reason: l.reason.clone(), by: l.locked_by.clone(), at })
+                (
+                    k.as_str().to_owned(),
+                    LockDoc {
+                        reason: l.reason.clone(),
+                        by: l.locked_by.clone(),
+                        at,
+                    },
+                )
             })
             .collect();
         doc.locks = locks;
@@ -98,4 +140,3 @@ pub fn export(
     let text = doc.write(format).map_err(|_| failed("format"))?;
     out.write_all(text.as_bytes()).map_err(|_| failed("write"))
 }
-

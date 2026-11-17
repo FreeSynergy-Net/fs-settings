@@ -66,7 +66,9 @@ pub fn import(
     mode: ImportMode,
     env: &ImportEnv<'_>,
 ) -> Result<ImportReport, Coded<SettingCode>> {
-    import_with(store, instance, src, file, format, mode, env, &mut |_| Ok(()))
+    import_with(store, instance, src, file, format, mode, env, &mut |_| {
+        Ok(())
+    })
 }
 
 /// [`import`] with a hook called before every write step (`0..n`); an `Err` stops the import and undoes it (the test hook of KC10).
@@ -85,7 +87,9 @@ pub fn import_with(
     step: &mut dyn FnMut(usize) -> Result<(), Coded<SettingCode>>,
 ) -> Result<ImportReport, Coded<SettingCode>> {
     let mut bytes = Vec::new();
-    src.take(MAX_BYTES + 1).read_to_end(&mut bytes).map_err(|_| invalid(file, 0, "read"))?;
+    src.take(MAX_BYTES + 1)
+        .read_to_end(&mut bytes)
+        .map_err(|_| invalid(file, 0, "read"))?;
     if u64::try_from(bytes.len()).unwrap_or(u64::MAX) > MAX_BYTES {
         return Err(invalid(file, 0, "too-large"));
     }

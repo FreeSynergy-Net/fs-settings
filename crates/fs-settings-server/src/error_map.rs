@@ -24,7 +24,9 @@ pub fn from_profile_code(c: Coded<ProfileCode>) -> Coded<SettingCode> {
     let erased = c.erase();
     let out = profile(erased.name);
     match erased.param(crate::ports::keys::NAME) {
-        Some(crate::ports::Param::Text(name)) => out.with_text(crate::ports::keys::NAME, name.clone()),
+        Some(crate::ports::Param::Text(name)) => {
+            out.with_text(crate::ports::keys::NAME, name.clone())
+        }
         _ => out,
     }
 }

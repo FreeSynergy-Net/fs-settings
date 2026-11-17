@@ -12,6 +12,7 @@
 #![warn(clippy::pedantic)]
 
 pub mod cli;
+mod cli_files;
 mod clock;
 mod connect;
 mod db_index;

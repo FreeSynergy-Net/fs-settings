@@ -33,18 +33,30 @@ impl Reply {
     /// Done, printing `lines`.
     #[must_use]
     pub fn done(lines: Vec<String>) -> Self {
-        Self { exit: 0, out: lines, err: Vec::new() }
+        Self {
+            exit: 0,
+            out: lines,
+            err: Vec::new(),
+        }
     }
 
     /// Failed with a code (exit 1).
     #[must_use]
     pub fn failed(code: &Coded<SettingCode>) -> Self {
-        Self { exit: 1, out: Vec::new(), err: vec![code_line(code)] }
+        Self {
+            exit: 1,
+            out: Vec::new(),
+            err: vec![code_line(code)],
+        }
     }
 
     /// Wrong words (exit 2): `usage word=<word>`.
     #[must_use]
     pub fn usage(word: &str) -> Self {
-        Self { exit: 2, out: Vec::new(), err: vec![format!("usage word={word}")] }
+        Self {
+            exit: 2,
+            out: Vec::new(),
+            err: vec![format!("usage word={word}")],
+        }
     }
 }

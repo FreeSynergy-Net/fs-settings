@@ -120,11 +120,12 @@ impl Doc {
     pub fn write(&self, format: Format) -> Result<String, String> {
         match format {
             Format::Toml => toml::to_string(self).map_err(|e| e.to_string()),
-            Format::Json => serde_json::to_string_pretty(self).map(|mut t| {
-                t.push('\n');
-                t
-            })
-            .map_err(|e| e.to_string()),
+            Format::Json => serde_json::to_string_pretty(self)
+                .map(|mut t| {
+                    t.push('\n');
+                    t
+                })
+                .map_err(|e| e.to_string()),
         }
     }
 
@@ -135,10 +136,16 @@ impl Doc {
     pub fn read(text: &str, format: Format) -> Result<Self, (u64, String)> {
         match format {
             Format::Toml => toml::from_str(text).map_err(|e| {
-                let line = e.span().map_or(0, |s| 1 + text[..s.start.min(text.len())].bytes().filter(|b| *b == b'\n').count());
+                let line = e.span().map_or(0, |s| {
+                    1 + text[..s.start.min(text.len())]
+                        .bytes()
+                        .filter(|b| *b == b'\n')
+                        .count()
+                });
                 (u64::try_from(line).unwrap_or(0), e.message().to_owned())
             }),
-            Format::Json => serde_json::from_str(text).map_err(|e| (u64::try_from(e.line()).unwrap_or(0), e.to_string())),
+            Format::Json => serde_json::from_str(text)
+                .map_err(|e| (u64::try_from(e.line()).unwrap_or(0), e.to_string())),
         }
     }
 }

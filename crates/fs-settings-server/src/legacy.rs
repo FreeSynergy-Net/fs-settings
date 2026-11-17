@@ -9,7 +9,9 @@ use std::path::{Path, PathBuf};
 
 use fs_types::Language;
 
-use crate::ports::{Coded, Place, ProgramName, Raw, Scope, SettingCode, SettingKey, SettingsStore, params};
+use crate::ports::{
+    Coded, Place, ProgramName, Raw, Scope, SettingCode, SettingKey, SettingsStore, params,
+};
 
 /// A language tag is a few dozen bytes: a bigger file is refused (as the words crate does).
 const MAX_LANGUAGE_BYTES: u64 = 64;
@@ -37,8 +39,10 @@ impl LegacyEnv {
         let abs = |v: Option<std::ffi::OsString>| v.map(PathBuf::from).filter(|p| p.is_absolute());
         let home = abs(std::env::var_os("HOME"));
         Self {
-            config_home: abs(std::env::var_os("XDG_CONFIG_HOME")).or_else(|| home.as_ref().map(|h| h.join(".config"))),
-            data_home: abs(std::env::var_os("XDG_DATA_HOME")).or_else(|| home.as_ref().map(|h| h.join(".local").join("share"))),
+            config_home: abs(std::env::var_os("XDG_CONFIG_HOME"))
+                .or_else(|| home.as_ref().map(|h| h.join(".config"))),
+            data_home: abs(std::env::var_os("XDG_DATA_HOME"))
+                .or_else(|| home.as_ref().map(|h| h.join(".local").join("share"))),
         }
     }
 }
@@ -71,7 +75,9 @@ pub enum LegacyLine {
 
 fn read_small(file: &Path, limit: u64) -> Result<Option<String>, Coded<SettingCode>> {
     let shown = file.to_string_lossy();
-    let Ok(meta) = std::fs::symlink_metadata(file) else { return Ok(None) };
+    let Ok(meta) = std::fs::symlink_metadata(file) else {
+        return Ok(None);
+    };
     let wrong = |code: SettingCode| Coded::new(code).with_text(params::FILE, shown.clone());
     if !meta.is_file() {
         return Err(wrong(SettingCode::NotRegular));
@@ -80,20 +86,35 @@ fn read_small(file: &Path, limit: u64) -> Result<Option<String>, Coded<SettingCo
         return Err(wrong(SettingCode::FileTooLarge));
     }
     let bytes = std::fs::read(file).map_err(|_| wrong(SettingCode::FileUnreadable))?;
-    String::from_utf8(bytes).map(Some).map_err(|_| wrong(SettingCode::FileBroken))
+    String::from_utf8(bytes)
+        .map(Some)
+        .map_err(|_| wrong(SettingCode::FileBroken))
 }
 
 /// Takes `raw` into `scope` as `key` unless there is a value; one line either way.
 fn take(store: &dyn SettingsStore, scope: &Scope, key: &str, raw: Raw, file: &Path) -> LegacyLine {
-    let problem = |code: Coded<SettingCode>| LegacyLine::Problem { file: file.to_path_buf(), code };
+    let problem = |code: Coded<SettingCode>| LegacyLine::Problem {
+        file: file.to_path_buf(),
+        code,
+    };
     let Ok(setting) = SettingKey::parse(key) else {
         return problem(Coded::new(SettingCode::KeyInvalid).with_text(params::KEY, key));
     };
-    if store.profile(scope, Place::Profile, 0).values.contains_key(&setting) {
-        return LegacyLine::Kept { file: file.to_path_buf(), key: key.to_owned() };
+    if store
+        .profile(scope, Place::Profile, 0)
+        .values
+        .contains_key(&setting)
+    {
+        return LegacyLine::Kept {
+            file: file.to_path_buf(),
+            key: key.to_owned(),
+        };
     }
     match store.write(scope, Place::Profile, 0, &setting, Some(&raw)) {
-        Ok(()) => LegacyLine::Imported { file: file.to_path_buf(), key: key.to_owned() },
+        Ok(()) => LegacyLine::Imported {
+            file: file.to_path_buf(),
+            key: key.to_owned(),
+        },
         Err(code) => problem(code),
     }
 }
@@ -101,37 +122,73 @@ fn take(store: &dyn SettingsStore, scope: &Scope, key: &str, raw: Raw, file: &Pa
 fn language(store: &dyn SettingsStore, scope: &Scope, file: &Path, out: &mut Vec<LegacyLine>) {
     match read_small(file, MAX_LANGUAGE_BYTES) {
         Ok(None) => {}
-        Err(code) => out.push(LegacyLine::Problem { file: file.to_path_buf(), code }),
+        Err(code) => out.push(LegacyLine::Problem {
+            file: file.to_path_buf(),
+            code,
+        }),
         Ok(Some(text)) => match Language::parse(text.trim()) {
-            Ok(tag) => out.push(take(store, scope, "fs.shell.language", Raw::Str(tag.canonical()), file)),
+            Ok(tag) => out.push(take(
+                store,
+                scope,
+                "fs.shell.language",
+                Raw::Str(tag.canonical()),
+                file,
+            )),
             Err(_) => out.push(LegacyLine::Problem {
                 file: file.to_path_buf(),
-                code: Coded::new(SettingCode::FileBroken).with_text(params::FILE, file.to_string_lossy()),
+                code: Coded::new(SettingCode::FileBroken)
+                    .with_text(params::FILE, file.to_string_lossy()),
             }),
         },
     }
 }
 
 fn frontend(store: &dyn SettingsStore, file: &Path, out: &mut Vec<LegacyLine>) {
-    let broken = || Coded::new(SettingCode::FileBroken).with_text(params::FILE, file.to_string_lossy());
+    let broken =
+        || Coded::new(SettingCode::FileBroken).with_text(params::FILE, file.to_string_lossy());
     let text = match read_small(file, MAX_FRONTEND_BYTES) {
         Ok(None) => return,
-        Err(code) => return out.push(LegacyLine::Problem { file: file.to_path_buf(), code }),
+        Err(code) => {
+            return out.push(LegacyLine::Problem {
+                file: file.to_path_buf(),
+                code,
+            });
+        }
         Ok(Some(text)) => text,
     };
     let Ok(json) = serde_json::from_str::<serde_json::Value>(&text) else {
-        return out.push(LegacyLine::Problem { file: file.to_path_buf(), code: broken() });
+        return out.push(LegacyLine::Problem {
+            file: file.to_path_buf(),
+            code: broken(),
+        });
     };
     // `frontend` is the word; `face` the one before the rename (ADR: Frontend, never Gesicht).
-    let Some(word) = json.get("frontend").or_else(|| json.get("face")).and_then(serde_json::Value::as_str) else {
+    let Some(word) = json
+        .get("frontend")
+        .or_else(|| json.get("face"))
+        .and_then(serde_json::Value::as_str)
+    else {
         return; // a file without the choice: nothing to take
     };
-    let Ok(tasks) = ProgramName::new("tasks") else { return };
+    let Ok(tasks) = ProgramName::new("tasks") else {
+        return;
+    };
     if FRONTENDS.contains(&word) {
-        out.push(take(store, &Scope::Program(tasks), "fs.shell.frontend", Raw::Str(word.to_owned()), file));
+        out.push(take(
+            store,
+            &Scope::Program(tasks),
+            "fs.shell.frontend",
+            Raw::Str(word.to_owned()),
+            file,
+        ));
     } else {
-        let code = Coded::new(SettingCode::ImportConflict).with_text(params::KEY, "fs.shell.frontend").with_text(params::CAUSE, "wrong-type");
-        out.push(LegacyLine::Problem { file: file.to_path_buf(), code });
+        let code = Coded::new(SettingCode::ImportConflict)
+            .with_text(params::KEY, "fs.shell.frontend")
+            .with_text(params::CAUSE, "wrong-type");
+        out.push(LegacyLine::Problem {
+            file: file.to_path_buf(),
+            code,
+        });
     }
 }
 
@@ -152,12 +209,21 @@ pub fn import_legacy(store: &dyn SettingsStore, env: &LegacyEnv) -> Vec<LegacyLi
         programs.sort();
         for (name, dir) in programs {
             if let Ok(program) = ProgramName::new(&name) {
-                language(store, &Scope::Program(program), &dir.join("language"), &mut out);
+                language(
+                    store,
+                    &Scope::Program(program),
+                    &dir.join("language"),
+                    &mut out,
+                );
             }
         }
     }
     if let Some(data) = &env.data_home {
-        frontend(store, &data.join("freesynergy").join("tasks").join("settings.json"), &mut out);
+        frontend(
+            store,
+            &data.join("freesynergy").join("tasks").join("settings.json"),
+            &mut out,
+        );
     }
     out
 }
