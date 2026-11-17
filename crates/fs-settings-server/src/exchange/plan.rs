@@ -136,7 +136,7 @@ impl Ctx<'_> {
             }
             let there = id.and_then(|i| {
                 self.store
-                    .profile(&scope, place, i)
+                    .profile(scope, place, i)
                     .values
                     .get(&key)
                     .cloned()
