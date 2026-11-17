@@ -7,7 +7,7 @@ use crate::db_instance::lock_error;
 use crate::db_store::DbSettingsStore;
 use crate::error_map::{from_profile_code, map, profile};
 use crate::ports::{
-    Coded, Health, IndexRows, Instance, Lock, Place, ProfileCode, ProfileSet, Raw, Scope,
+    Coded, Health, IndexRows, Instance, Lock, Place, ProfileSet, Raw, Scope,
     SettingCode, SettingKey, SettingsStore, Snapshot, Stamp, Writer, index_step_ok, params,
 };
 use crate::prim::{place_row, scope_row, to_prim, to_raw};

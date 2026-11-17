@@ -64,7 +64,7 @@ impl SettingsStore for Reopening {
     }
     fn update_index(
         &self,
-        f: &mut dyn FnMut(&mut ProfileSet<u64>) -> Result<(), Coded<ProfileCode>>,
+        f: &mut fs_settings::IndexFn<'_>,
     ) -> Result<ProfileSet<u64>, Coded<SettingCode>> {
         self.inner.read().unwrap().update_index(f)
     }
@@ -98,7 +98,7 @@ struct DbFixture {
 }
 
 impl StoreFixture for DbFixture {
-    fn fresh(&self) -> Arc<dyn InstanceStore> {
+    fn fresh(&mut self) -> Arc<dyn InstanceStore> {
         let n = self.made.lock().unwrap().len();
         let file = db_file(&self.dir.path().join(format!("s{n}")));
         std::fs::create_dir_all(file.parent().unwrap()).unwrap();
@@ -110,7 +110,7 @@ impl StoreFixture for DbFixture {
         store
     }
 
-    fn break_store(&self, store: &dyn InstanceStore) -> bool {
+    fn break_store(&mut self, store: &dyn InstanceStore) -> bool {
         let made = self.made.lock().unwrap();
         // the store the suite holds is the latest one made for it (rules take one fresh store each)
         let Some(target) = made.iter().rev().find(|m| {

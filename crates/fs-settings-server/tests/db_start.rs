@@ -1,6 +1,7 @@
 //! KC2 to KC5: the start sequence, the emergency mode (the file stays as it was) and `repair`.
 
-use fs_objects::v5::{DOMAIN, Domain, Step, Store};
+use fs_objects::v5::setting::DOMAIN;
+use fs_objects::v5::{Domain, Step, Store};
 use fs_settings::{Health, Place, Scope, SettingCode, SettingsStore};
 use fs_settings_server::{LegacyEnv, import_legacy, repair};
 
