@@ -183,7 +183,7 @@ impl Ctx<'_> {
             }
             Reference::parse(&lock.by).map_err(|_| invalid(self.file, 0, "lock-by"))?;
         }
-        let there = instance.map(InstanceStore::instance);
+        let there = instance.map(<dyn InstanceStore>::instance);
         for (text, v) in &doc.instance {
             let (key, raw) = (self.key(text)?, Raw::from(v));
             let Some(layer) = there.as_ref().filter(|_| self.env.by.is_some()) else {
