@@ -22,6 +22,8 @@ fs-settings = { git = "https://github.com/FreeSynergy/fs-components", branch = "
 # Part B2: client, server skeleton, `ensure_service`. Branch pin, provisional.
 fs-settings-rpc = { git = "https://github.com/FreeSynergy/fs-rpc", branch = "unreviewed/probe-fs-settings-rpc" }
 fs-rpc = { git = "https://github.com/FreeSynergy/fs-rpc", branch = "unreviewed/probe-fs-settings-rpc" }
+# Same source as the `conformance` feature of fs-settings (B1) pins; the pins must stay equal (one source per library, ADR 0092).
+fs-conformance = { git = "https://github.com/FreeSynergy/fs-types", tag = "v0.0.1" }
 capnp = "0.27"
 tokio = { version = "1", features = ["rt", "macros", "time"] }
 serde = { version = "1", features = ["derive"] }

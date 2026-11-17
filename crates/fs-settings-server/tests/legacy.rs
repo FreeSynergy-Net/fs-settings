@@ -21,23 +21,70 @@ fn kc11_legacy_files() {
     let general = config.join("freesynergy").join("language");
     let tasks = config.join("freesynergy").join("tasks").join("language");
     let json = data.join("freesynergy").join("tasks").join("settings.json");
-    let kept = config.join("freesynergy").join("calendars").join("language");
-    let before = [put(&general, "de\n"), put(&tasks, "en"), put(&json, "{\"face\":\"day\"}"), put(&kept, "fr")];
+    let kept = config
+        .join("freesynergy")
+        .join("calendars")
+        .join("language");
+    let before = [
+        put(&general, "de\n"),
+        put(&tasks, "en"),
+        put(&json, "{\"face\":\"day\"}"),
+        put(&kept, "fr"),
+    ];
     let store = open(&db_file(&dir.path().join("db")));
     // the calendars program has its language already: it must stay
     let lang = key("fs.shell.language");
-    store.write(&program("calendars"), Place::Profile, 0, &lang, Some(&raw_str("nl"))).unwrap();
+    store
+        .write(
+            &program("calendars"),
+            Place::Profile,
+            0,
+            &lang,
+            Some(&raw_str("nl")),
+        )
+        .unwrap();
 
-    let env = LegacyEnv { config_home: Some(config), data_home: Some(data) };
+    let env = LegacyEnv {
+        config_home: Some(config),
+        data_home: Some(data),
+    };
     let lines = import_legacy(&store, &env);
-    let imported = lines.iter().filter(|l| matches!(l, LegacyLine::Imported { .. })).count();
+    let imported = lines
+        .iter()
+        .filter(|l| matches!(l, LegacyLine::Imported { .. }))
+        .count();
     assert_eq!(imported, 3, "{lines:?}");
-    assert!(lines.iter().any(|l| matches!(l, LegacyLine::Kept { key, .. } if key == "fs.shell.language")));
-    assert_eq!(store.profile(&Scope::General, Place::Profile, 0).values.get(&lang), Some(&raw_str("de")));
-    assert_eq!(store.profile(&program("tasks"), Place::Profile, 0).values.get(&lang), Some(&raw_str("en")));
-    assert_eq!(store.profile(&program("calendars"), Place::Profile, 0).values.get(&lang), Some(&raw_str("nl")));
+    assert!(
+        lines
+            .iter()
+            .any(|l| matches!(l, LegacyLine::Kept { key, .. } if key == "fs.shell.language"))
+    );
     assert_eq!(
-        store.profile(&program("tasks"), Place::Profile, 0).values.get(&key("fs.shell.frontend")),
+        store
+            .profile(&Scope::General, Place::Profile, 0)
+            .values
+            .get(&lang),
+        Some(&raw_str("de"))
+    );
+    assert_eq!(
+        store
+            .profile(&program("tasks"), Place::Profile, 0)
+            .values
+            .get(&lang),
+        Some(&raw_str("en"))
+    );
+    assert_eq!(
+        store
+            .profile(&program("calendars"), Place::Profile, 0)
+            .values
+            .get(&lang),
+        Some(&raw_str("nl"))
+    );
+    assert_eq!(
+        store
+            .profile(&program("tasks"), Place::Profile, 0)
+            .values
+            .get(&key("fs.shell.frontend")),
         Some(&raw_str("day"))
     );
     let after = [&general, &tasks, &json, &kept].map(|p| std::fs::read(p).unwrap());

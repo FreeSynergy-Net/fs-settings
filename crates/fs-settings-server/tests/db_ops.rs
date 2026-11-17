@@ -2,12 +2,13 @@
 
 use std::sync::Arc;
 
+use fs_settings::InstanceStore;
 use fs_settings::{
-    Catalog, Declaration, GroupId, Health, Kind, Layer, Owner, OwnerKind, Place, ProfileCode, ProfileName, ProfileRef, ProgramName, Raw,
-    Scope, SettingCode, SettingKey, Settings, SettingsStore, Stampd, Target, Value,
+    Catalog, Declaration, GroupId, Health, Kind, Layer, Owner, OwnerKind, Place, ProfileCode,
+    ProfileName, ProfileRef, ProgramName, Raw, Scope, SettingCode, SettingKey, Settings,
+    SettingsStore, Stampd, Target, Value,
 };
 use fs_settings_server::{DbSettingsStore, NoInstance};
-use fs_settings::InstanceStore;
 
 mod support;
 use support::{db_file, iri, open, open_instance};
@@ -17,7 +18,10 @@ fn name(text: &str) -> ProfileName {
 }
 
 /// Adds a named profile the way `Settings` does: the next id is `top + 1`, and the base value is the new top.
-fn create(set: &mut fs_settings::ProfileSet<u64>, text: &str) -> Result<(), fs_settings::Coded<ProfileCode>> {
+fn create(
+    set: &mut fs_settings::ProfileSet<u64>,
+    text: &str,
+) -> Result<(), fs_settings::Coded<ProfileCode>> {
     let id = set.get(&ProfileRef::Base).copied().unwrap() + 1;
     *set.get_mut(&ProfileRef::Base).unwrap() = id;
     set.create(name(text), None)?;
@@ -32,7 +36,9 @@ fn kc6_eight_concurrent_writes() {
     let dir = tempfile::tempdir().unwrap();
     let store = Arc::new(open(&db_file(dir.path())));
     let before = store.stamp();
-    let rt = tokio::runtime::Builder::new_current_thread().build().unwrap();
+    let rt = tokio::runtime::Builder::new_current_thread()
+        .build()
+        .unwrap();
     let done = rt.block_on(async {
         let tasks: Vec<_> = (0..8_i64)
             .map(|n| {
@@ -53,7 +59,13 @@ fn kc6_eight_concurrent_writes() {
         .await
     });
     assert!(done.expect("no hang").iter().all(Result::is_ok));
-    assert_eq!(store.profile(&Scope::General, Place::Profile, 0).values.len(), 8);
+    assert_eq!(
+        store
+            .profile(&Scope::General, Place::Profile, 0)
+            .values
+            .len(),
+        8
+    );
     assert_eq!(store.stamp().0, before.0 + 8);
 }
 
@@ -74,7 +86,10 @@ fn kc7_profiles_from_two_threads_and_a_failing_closure() {
     }
     let (set, problems) = store.index();
     assert!(problems.is_empty());
-    let mut ids: Vec<u64> = set.names().map(|n| set.get(&ProfileRef::Named(n.clone())).copied().unwrap()).collect();
+    let mut ids: Vec<u64> = set
+        .names()
+        .map(|n| set.get(&ProfileRef::Named(n.clone())).copied().unwrap())
+        .collect();
     ids.sort_unstable();
     assert_eq!(ids, vec![1, 2]);
 
@@ -105,8 +120,17 @@ fn kc14_person_service_has_no_instance_layer() {
 }
 
 fn week_start(owner: &str) -> (SettingKey, Declaration) {
-    let k = SettingKey::new(&Owner::new(OwnerKind::Program, owner).unwrap(), "week-start").unwrap();
-    let d = Declaration::new(k.clone(), Kind::Whole { min: 1, max: 7 }, Value::Whole(1), GroupId::new("calendar").unwrap());
+    let k = SettingKey::new(
+        &Owner::new(OwnerKind::Program, owner).unwrap(),
+        "week-start",
+    )
+    .unwrap();
+    let d = Declaration::new(
+        k.clone(),
+        Kind::Whole { min: 1, max: 7 },
+        Value::Whole(1),
+        GroupId::new("calendar").unwrap(),
+    );
     (k, d)
 }
 
@@ -127,26 +151,52 @@ fn kc17_settings_over_the_database() {
     let dir = tempfile::tempdir().unwrap();
     let store = Arc::new(open_instance(&db_file(dir.path()), 1_700_000_000_000));
     let (k, d) = week_start("tasks");
-    let (a, b) = (settings(&store, "tasks", &k, &d), settings(&store, "calendars", &k, &d));
+    let (a, b) = (
+        settings(&store, "tasks", &k, &d),
+        settings(&store, "calendars", &k, &d),
+    );
 
-    a.save(&k, Some(&Value::Whole(3)), Target::ThisProgram).unwrap();
+    a.save(&k, Some(&Value::Whole(3)), Target::ThisProgram)
+        .unwrap();
     b.refresh();
-    assert_eq!(a.get(&k).map(|e| (e.value, e.from)), Some((Value::Whole(3), Layer::Program)));
-    assert_eq!(b.get(&k).map(|e| e.from), Some(Layer::Default), "the other program is untouched");
+    assert_eq!(
+        a.get(&k).map(|e| (e.value, e.from)),
+        Some((Value::Whole(3), Layer::Program))
+    );
+    assert_eq!(
+        b.get(&k).map(|e| e.from),
+        Some(Layer::Default),
+        "the other program is untouched"
+    );
 
-    a.save(&k, Some(&Value::Whole(5)), Target::AllPrograms).unwrap();
+    a.save(&k, Some(&Value::Whole(5)), Target::AllPrograms)
+        .unwrap();
     b.refresh();
-    assert_eq!(a.get(&k).map(|e| (e.value, e.from)), Some((Value::Whole(5), Layer::Person)), "the own override is gone");
+    assert_eq!(
+        a.get(&k).map(|e| (e.value, e.from)),
+        Some((Value::Whole(5), Layer::Person)),
+        "the own override is gone"
+    );
     assert_eq!(b.get(&k).map(|e| e.value), Some(Value::Whole(5)));
 
     // a lock of the instance layer (the instance tables of this very file) refuses the save, with who and why
     let by = iri("https://example.org/admin");
-    let who = Stampd { by, at: support::at(1) };
-    let lock = fs_settings::LockChange::Lock { value: Raw::Int(2), reason: "policy".to_owned() };
+    let who = Stampd {
+        by,
+        at: support::at(1),
+    };
+    let lock = fs_settings::LockChange::Lock {
+        value: Raw::Int(2),
+        reason: "policy".to_owned(),
+    };
     assert!(store.write_lock(&k, &lock, &who).unwrap());
     a.refresh();
-    let refused = a.save(&k, Some(&Value::Whole(6)), Target::ThisProgram).unwrap_err();
+    let refused = a
+        .save(&k, Some(&Value::Whole(6)), Target::ThisProgram)
+        .unwrap_err();
     assert_eq!(refused.code(), SettingCode::Locked);
-    assert_eq!(a.get(&k).map(|e| (e.value, e.from)), Some((Value::Whole(2), Layer::Instance)));
+    assert_eq!(
+        a.get(&k).map(|e| (e.value, e.from)),
+        Some((Value::Whole(2), Layer::Instance))
+    );
 }
-

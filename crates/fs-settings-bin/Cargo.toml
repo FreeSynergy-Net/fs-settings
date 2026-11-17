@@ -19,3 +19,6 @@ fs-settings-server = { path = "../fs-settings-server" }
 tempfile.workspace = true
 fs-settings.workspace = true
 fs-settings-rpc.workspace = true
+fs-rpc.workspace = true
+fs-types.workspace = true
+tokio.workspace = true

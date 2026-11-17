@@ -31,7 +31,13 @@ pub fn db_file(dir: &Path) -> PathBuf {
 
 /// A person store on `dir/settings.db`, clock fixed at `ms`.
 pub fn open_at(file: &Path, ms: i64) -> DbSettingsStore {
-    DbSettingsStore::open(&DbPlace::File(file.to_path_buf()), false, Box::new(NoInstance), fixed_clock(at(ms))).unwrap()
+    DbSettingsStore::open(
+        &DbPlace::File(file.to_path_buf()),
+        false,
+        Box::new(NoInstance),
+        fixed_clock(at(ms)),
+    )
+    .unwrap()
 }
 
 pub fn open(file: &Path) -> DbSettingsStore {
@@ -40,28 +46,43 @@ pub fn open(file: &Path) -> DbSettingsStore {
 
 /// The instance store (instance tables active) on `file`.
 pub fn open_instance(file: &Path, ms: i64) -> DbSettingsStore {
-    DbSettingsStore::open(&DbPlace::File(file.to_path_buf()), true, Box::new(NoInstance), fixed_clock(at(ms))).unwrap()
+    DbSettingsStore::open(
+        &DbPlace::File(file.to_path_buf()),
+        true,
+        Box::new(NoInstance),
+        fixed_clock(at(ms)),
+    )
+    .unwrap()
 }
 
 /// What proves "the file stayed as it was": all bytes, the length and the modification time.
 pub fn fingerprint(file: &Path) -> (Vec<u8>, u64, SystemTime) {
     let meta = std::fs::metadata(file).unwrap();
-    (std::fs::read(file).unwrap(), meta.len(), meta.modified().unwrap())
+    (
+        std::fs::read(file).unwrap(),
+        meta.len(),
+        meta.modified().unwrap(),
+    )
 }
 
 /// The names in a folder, sorted (no new file may appear).
 pub fn listing(dir: &Path) -> Vec<String> {
-    let mut names: Vec<String> = std::fs::read_dir(dir).unwrap().map(|e| e.unwrap().file_name().to_string_lossy().into_owned()).collect();
+    let mut names: Vec<String> = std::fs::read_dir(dir)
+        .unwrap()
+        .map(|e| e.unwrap().file_name().to_string_lossy().into_owned())
+        .collect();
     names.sort();
     names
 }
 
 /// The `cause` or any text parameter of a code.
 pub fn text_of(code: &Coded<SettingCode>, name: &str) -> Option<String> {
-    code.params().find(|(k, _)| *k == name).and_then(|(_, v)| match v {
-        fs_settings::Param::Text(t) => Some(t.clone()),
-        _ => None,
-    })
+    code.params()
+        .find(|(k, _)| *k == name)
+        .and_then(|(_, v)| match v {
+            fs_settings::Param::Text(t) => Some(t.clone()),
+            _ => None,
+        })
 }
 
 pub fn is_code(code: &Coded<SettingCode>, expected: SettingCode) -> bool {
