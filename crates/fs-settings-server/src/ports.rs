@@ -8,9 +8,9 @@ pub use fs_objects::v5::setting::{
 pub use fs_objects::v5::{Error as RowsError, Inspect, Store};
 pub use fs_settings::coded_stub::Param;
 pub use fs_settings::{
-    Catalog, Coded, Health, Instance, InstanceLogEntry, InstanceStore, Layer, Lock,
-    LockChange, Place, ProfileCode, ProfileName, ProfileRef, ProfileSet, ProgramName, Raw, Scope,
-    SettingCode, SettingKey, SettingsStore, Snapshot, Stamp, Stampd, index_step_ok, keys,
+    Catalog, Coded, Health, Instance, InstanceLogEntry, InstanceStore, Layer, Lock, LockChange,
+    Place, ProfileCode, ProfileName, ProfileRef, ProfileSet, ProgramName, Raw, Scope, SettingCode,
+    SettingKey, SettingsStore, Snapshot, Stamp, Stampd, index_step_ok, keys,
 };
 pub use fs_types::{BasicValue, ObjectId, Reference, Utc};
 

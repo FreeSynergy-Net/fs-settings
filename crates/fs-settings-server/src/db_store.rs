@@ -46,8 +46,8 @@ impl Started {
 }
 
 impl DbSettingsStore {
-    /// Start sequence: `resolve` -> file absent: create + register (a first start) -> present: `Store::inspect` FIRST; `Fits` -> open
-    /// + register; `Newer` / `Broken` -> DO NOT OPEN, emergency mode: `Health::Defaults[store-newer | store-broken]`, every
+    /// Start sequence: `resolve`; file absent: create and register (a first start); present: `Store::inspect` FIRST; `Fits`: open
+    /// and register; `Newer` or `Broken`: DO NOT OPEN, emergency mode with `Health::Defaults[store-newer | store-broken]`, every
     /// snapshot empty, every write `read-only{which=person}`. An existing file is never deleted, overwritten or created again.
     /// No folder to put the file in (`no-folder`) is emergency mode too (an empty file name), never a silent default.
     ///
@@ -137,10 +137,10 @@ fn start(rt: &tokio::runtime::Runtime, file: &Path, now: &Clock) -> Started {
     };
     match rt.block_on(Store::inspect(path, &DOMAIN)) {
         Ok(Inspect::Absent) => {
-            if let Some(dir) = file.parent() {
-                if std::fs::create_dir_all(dir).is_err() {
-                    return Started::emergency(broken(file, "open"));
-                }
+            if let Some(dir) = file.parent()
+                && std::fs::create_dir_all(dir).is_err()
+            {
+                return Started::emergency(broken(file, "open"));
             }
             open_rows(rt, path, file, now, true)
         }

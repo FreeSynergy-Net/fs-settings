@@ -29,13 +29,12 @@ pub fn to_set(ix: &IndexRows) -> Result<ProfileSet<u64>, Coded<SettingCode>> {
             *v = u64::try_from(p.id).unwrap_or(0);
         }
     }
-    if ix.active > 0 {
-        if let Some(p) = live.iter().find(|p| p.id == ix.active) {
-            let name =
-                ProfileName::new(p.name.as_deref().unwrap_or("")).map_err(from_profile_code)?;
-            set.switch(ProfileRef::Named(name))
-                .map_err(from_profile_code)?;
-        }
+    if ix.active > 0
+        && let Some(p) = live.iter().find(|p| p.id == ix.active)
+    {
+        let name = ProfileName::new(p.name.as_deref().unwrap_or("")).map_err(from_profile_code)?;
+        set.switch(ProfileRef::Named(name))
+            .map_err(from_profile_code)?;
     }
     Ok(set)
 }
@@ -52,7 +51,7 @@ fn named(set: &ProfileSet<u64>) -> Vec<(u64, ProfileName)> {
 fn active_id(set: &ProfileSet<u64>) -> u64 {
     match set.active() {
         ProfileRef::Base => 0,
-        other => id_of(set, other),
+        named @ ProfileRef::Named(_) => id_of(set, named),
     }
 }
 
@@ -72,14 +71,14 @@ pub fn changes(old: &ProfileSet<u64>, new: &ProfileSet<u64>) -> Vec<IndexChange>
         }
     }
     for (id, name) in &after {
-        if let Some((_, was)) = before.iter().find(|(i, _)| i == id) {
-            if was.as_str() != name.as_str() {
-                out.push(IndexChange::Rename {
-                    id: signed(*id),
-                    name: name.as_str().to_owned(),
-                    name_key: key_of(name),
-                });
-            }
+        if let Some((_, was)) = before.iter().find(|(i, _)| i == id)
+            && was.as_str() != name.as_str()
+        {
+            out.push(IndexChange::Rename {
+                id: signed(*id),
+                name: name.as_str().to_owned(),
+                name_key: key_of(name),
+            });
         }
     }
     for (id, name) in &after {

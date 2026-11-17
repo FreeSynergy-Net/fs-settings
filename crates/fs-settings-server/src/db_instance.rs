@@ -21,10 +21,10 @@ pub(crate) fn lock_error(
     key: &SettingKey,
 ) -> Coded<SettingCode> {
     let mapped = map(e, db.file(), Some(key.as_str()));
-    if mapped.code() == SettingCode::Locked {
-        if let Some(lock) = db.instance().locks.get(key) {
-            return locked(key, lock);
-        }
+    if mapped.code() == SettingCode::Locked
+        && let Some(lock) = db.instance().locks.get(key)
+    {
+        return locked(key, lock);
     }
     mapped
 }

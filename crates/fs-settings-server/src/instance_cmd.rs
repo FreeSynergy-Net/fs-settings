@@ -32,7 +32,11 @@ fn shown(raw: &Raw) -> String {
 /// An id as hex text (the log's paging word) and back.
 #[must_use]
 pub fn id_text(id: &ObjectId) -> String {
-    id.0.iter().map(|b| format!("{b:02x}")).collect()
+    use std::fmt::Write;
+    id.0.iter().fold(String::new(), |mut s, b| {
+        let _ = write!(s, "{b:02x}");
+        s
+    })
 }
 
 fn id_parse(text: &str) -> Option<ObjectId> {

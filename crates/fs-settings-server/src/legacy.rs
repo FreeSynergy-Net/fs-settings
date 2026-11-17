@@ -92,7 +92,7 @@ fn read_small(file: &Path, limit: u64) -> Result<Option<String>, Coded<SettingCo
 }
 
 /// Takes `raw` into `scope` as `key` unless there is a value; one line either way.
-fn take(store: &dyn SettingsStore, scope: &Scope, key: &str, raw: Raw, file: &Path) -> LegacyLine {
+fn take(store: &dyn SettingsStore, scope: &Scope, key: &str, raw: &Raw, file: &Path) -> LegacyLine {
     let problem = |code: Coded<SettingCode>| LegacyLine::Problem {
         file: file.to_path_buf(),
         code,
@@ -110,7 +110,7 @@ fn take(store: &dyn SettingsStore, scope: &Scope, key: &str, raw: Raw, file: &Pa
             key: key.to_owned(),
         };
     }
-    match store.write(scope, Place::Profile, 0, &setting, Some(&raw)) {
+    match store.write(scope, Place::Profile, 0, &setting, Some(raw)) {
         Ok(()) => LegacyLine::Imported {
             file: file.to_path_buf(),
             key: key.to_owned(),
@@ -131,7 +131,7 @@ fn language(store: &dyn SettingsStore, scope: &Scope, file: &Path, out: &mut Vec
                 store,
                 scope,
                 "fs.shell.language",
-                Raw::Str(tag.canonical()),
+                &Raw::Str(tag.canonical()),
                 file,
             )),
             Err(_) => out.push(LegacyLine::Problem {
@@ -178,7 +178,7 @@ fn frontend(store: &dyn SettingsStore, file: &Path, out: &mut Vec<LegacyLine>) {
             store,
             &Scope::Program(tasks),
             "fs.shell.frontend",
-            Raw::Str(word.to_owned()),
+            &Raw::Str(word.to_owned()),
             file,
         ));
     } else {

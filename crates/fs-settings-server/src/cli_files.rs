@@ -168,12 +168,9 @@ pub(crate) fn do_import(args: &Args) -> Result<Reply, Usage> {
         now: system_clock()(),
         device: args.flag("--device"),
     };
-    let mut src = match File::open(file) {
-        Ok(f) => f,
-        Err(_) => {
-            let c = Coded::new(SettingCode::FileUnreadable).with_text(params::FILE, file.as_str());
-            return Ok(Reply::failed(&c));
-        }
+    let Ok(mut src) = File::open(file) else {
+        let c = Coded::new(SettingCode::FileUnreadable).with_text(params::FILE, file.as_str());
+        return Ok(Reply::failed(&c));
     };
     let admin_client = by.as_ref().filter(|_| instance).map(|b| admin(&socket, b));
     let result = import(

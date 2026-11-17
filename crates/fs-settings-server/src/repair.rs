@@ -59,8 +59,9 @@ fn newest_export(dir: &Path) -> Option<PathBuf> {
     let mut best: Option<(std::time::SystemTime, PathBuf)> = None;
     for entry in std::fs::read_dir(dir).ok()?.flatten() {
         let name = entry.file_name().to_string_lossy().into_owned();
-        let is_export = name.starts_with("settings-export")
-            && (name.ends_with(".toml") || name.ends_with(".json"));
+        let lower = name.to_lowercase();
+        let is_export = lower.starts_with("settings-export")
+            && (lower.ends_with(".toml") || lower.ends_with(".json"));
         let Some(time) = entry
             .metadata()
             .ok()

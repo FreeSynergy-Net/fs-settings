@@ -1,6 +1,8 @@
 //! What a command answers: exit code and lines. Codes are printed as `setting-error-<code> key=value ...`, never as a sentence
 //! (ADR 0057: the words belong to the program that shows them).
 
+use std::fmt::Write;
+
 use crate::ports::{Coded, Param, SettingCode};
 
 /// The answer of a command.
@@ -21,8 +23,12 @@ pub fn code_line(code: &Coded<SettingCode>) -> String {
     let mut line = format!("{}{}", erased.prefix, erased.name);
     for (k, v) in &erased.params {
         match v {
-            Param::Text(t) => line.push_str(&format!(" {k}={t}")),
-            Param::Number(n) => line.push_str(&format!(" {k}={n}")),
+            Param::Text(t) => {
+                let _ = write!(line, " {k}={t}");
+            }
+            Param::Number(n) => {
+                let _ = write!(line, " {k}={n}");
+            }
             _ => {}
         }
     }
