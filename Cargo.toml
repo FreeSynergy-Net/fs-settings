@@ -16,14 +16,14 @@ rust-version = "1.89"
 [workspace.dependencies]
 fs-types = { git = "https://github.com/FreeSynergy/fs-types", tag = "v0.0.1" }
 # Part A: `v5::setting` (SettingRows, Store::inspect, Error::Newer). Branch pin, provisional.
-fs-objects = { git = "https://github.com/FreeSynergy/fs-objects", branch = "unreviewed/probe-settings-v5", features = ["v5"] }
+fs-objects = { git = "https://github.com/FreeSynergy/fs-objects", rev = "de48eb836ace5b282ead58cb9902fd964f5a7936", features = ["v5"] }
 # Part B1: the port (SettingsStore, InstanceStore, codes, StoreSuite). Package `fs-settings` of the repo fs-components. Branch pin, provisional.
-fs-settings = { git = "https://github.com/FreeSynergy/fs-components", branch = "unreviewed/probe-settingsstore-v1" }
+fs-settings = { git = "https://github.com/FreeSynergy/fs-components", rev = "a55e21f0811040f38617abe69546d21e2c45187d" }
 # Part B2: client, server skeleton, `ensure_service`. Branch pin, provisional.
-fs-settings-rpc = { git = "https://github.com/FreeSynergy/fs-rpc", branch = "unreviewed/probe-fs-settings-rpc" }
-fs-rpc = { git = "https://github.com/FreeSynergy/fs-rpc", branch = "unreviewed/probe-fs-settings-rpc" }
+fs-settings-rpc = { git = "https://github.com/FreeSynergy/fs-rpc", rev = "681683e1d42a53fa754f3a9fca1453590f7575df" }
+fs-rpc = { git = "https://github.com/FreeSynergy/fs-rpc", rev = "681683e1d42a53fa754f3a9fca1453590f7575df" }
 # Same source as the `conformance` feature of fs-settings (B1) pins; the pins must stay equal (one source per library, ADR 0092).
-fs-conformance = { git = "https://github.com/FreeSynergy/fs-types", tag = "v0.0.1" }
+fs-conformance = { git = "https://github.com/FreeSynergy/fs-types", rev = "339aa24fa61bc8e6c39ea7875d826ec6993cd24f" }
 capnp = "0.27"
 tokio = { version = "1", features = ["rt", "macros", "time"] }
 serde = { version = "1", features = ["derive"] }
