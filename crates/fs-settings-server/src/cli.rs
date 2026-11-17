@@ -7,7 +7,7 @@ use crate::cli_files::{do_export, do_import, do_repair, socket_for};
 use crate::clock::system_clock;
 use crate::connect::{admin, ensure};
 use crate::instance_cmd::run_instance;
-use crate::ports::Reference;
+use crate::ports::{BasicValue, Reference};
 use crate::reply::Reply;
 use crate::serve::{ServeError, serve};
 use crate::words::{Args, Usage, instance_cmd};

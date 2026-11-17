@@ -5,7 +5,7 @@ use std::path::Path;
 use std::time::Duration;
 
 use fs_rpc::{CommandStarter, Expected, SingleTimes};
-use fs_settings_rpc::{ClientTimes, RpcInstanceAdmin, RpcSettingsStore, ensure_service};
+use fs_settings_rpc::{ClientTimes, RpcInstanceAdmin, RpcSettingsStore, ensure_service_with};
 
 use crate::ports::{Coded, Reference, SettingCode};
 use crate::serve::PROGRAM;
@@ -33,9 +33,15 @@ pub fn ensure(socket: &Path, instance: bool) -> Result<(), Coded<SettingCode>> {
         words.push("--instance".into());
     }
     words.extend(["--socket".into(), socket.as_os_str().to_owned()]);
-    let starter = CommandStarter::new(me, words);
+    let starter = CommandStarter::new(me.clone(), words);
     let expected = Expected::new(env!("CARGO_PKG_VERSION")).with_program(PROGRAM);
-    ensure_service(socket, &expected, &starter, &SingleTimes::default())
+    ensure_service_with(
+        socket,
+        &expected,
+        &starter,
+        Some(&me),
+        &SingleTimes::default(),
+    )
 }
 
 /// The client for the program fs-settings itself: every scope.
@@ -47,5 +53,5 @@ pub fn manage(socket: &Path) -> RpcSettingsStore {
 /// The admin client of the instance service for the actor `by`.
 #[must_use]
 pub fn admin(socket: &Path, by: &Reference) -> RpcInstanceAdmin {
-    RpcInstanceAdmin::open(socket, by, times())
+    RpcInstanceAdmin::open(socket, &crate::ports::BasicValue::canonical(by), times())
 }

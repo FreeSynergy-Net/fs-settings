@@ -12,8 +12,6 @@ use crate::ports::{
 };
 use crate::prim::{place_row, scope_row, to_prim, to_raw};
 
-type IndexResult = Result<(), Coded<ProfileCode>>;
-
 /// Rows of values -> a snapshot; a key that no longer parses is a problem in the snapshot, never skipped silently.
 pub(crate) fn snapshot_of(rows: Vec<(String, crate::ports::Prim)>) -> Snapshot {
     let mut values = BTreeMap::new();
@@ -145,7 +143,7 @@ impl SettingsStore for DbSettingsStore {
     /// One transaction of the rows: `f` sees the index as stored now; an error of `f` or a refused step changes nothing.
     fn update_index(
         &self,
-        f: &mut dyn FnMut(&mut ProfileSet<u64>) -> IndexResult,
+        f: &mut fs_settings::IndexFn<'_>,
     ) -> Result<ProfileSet<u64>, Coded<SettingCode>> {
         let store = self.writable("person")?;
         let at = (self.now)();

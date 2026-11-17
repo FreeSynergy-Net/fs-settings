@@ -10,7 +10,7 @@ use std::sync::Arc;
 use fs_rpc::{ServerIdentity, run_until_signal_as};
 use fs_settings_rpc::SettingsService;
 
-use crate::clock::{env_os_user, system_clock};
+use crate::clock::system_clock;
 use crate::db_store::DbSettingsStore;
 use crate::instance_source::NoInstance;
 use crate::legacy::{LegacyEnv, LegacyLine, import_legacy};
@@ -117,6 +117,7 @@ pub fn serve(args: &[String]) -> Result<(), ServeError> {
     let failed = |c: &Coded<SettingCode>| ServeError::Failed(code_line(c));
     let socket = socket_of(&words).map_err(|c| failed(&c))?;
     let (store, lines) = open_store(&words, &LegacyEnv::from_process()).map_err(|c| failed(&c))?;
+    let store = store.with_os_user(Arc::new(fs_settings_rpc::current_os_user));
     for line in legacy_lines(&lines) {
         eprintln!("fs-settings: {line}");
     }
@@ -127,15 +128,16 @@ pub fn serve(args: &[String]) -> Result<(), ServeError> {
         }
     }
     let shared = Arc::new(store);
-    let service = SettingsService {
-        person: Arc::clone(&shared),
-        instance: words.instance.then(|| Arc::clone(&shared)),
-        os_user: env_os_user(),
-        now: system_clock(),
-    };
+    let mut service = SettingsService::new(
+        Arc::clone(&shared),
+        words.instance.then(|| Arc::clone(&shared)),
+    );
+    service.now = system_clock();
     let identity = ServerIdentity::new(PROGRAM, env!("CARGO_PKG_VERSION"));
-    run_until_signal_as(&socket, identity, move || async move {
-        Ok(service.into_client())
-    })
+    run_until_signal_as(
+        &socket,
+        identity,
+        move || async move { Ok(service.bootstrap()) },
+    )
     .map_err(|e| ServeError::Failed(format!("serve-failed cause={e}")))
 }

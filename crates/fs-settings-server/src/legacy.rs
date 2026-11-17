@@ -7,7 +7,7 @@
 
 use std::path::{Path, PathBuf};
 
-use fs_types::Language;
+use fs_types::{BasicValue, Language};
 
 use crate::ports::{
     Coded, Place, ProgramName, Raw, Scope, SettingCode, SettingKey, SettingsStore, params,
