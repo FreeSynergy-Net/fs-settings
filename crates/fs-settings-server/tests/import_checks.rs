@@ -2,7 +2,7 @@
 
 use std::path::Path;
 
-use fs_settings::{Catalog, InstanceStore, LockChange, Place, Stampd};
+use fs_settings::{Catalog, InstanceStore, LockChange, Place, SettingsStore, Stampd};
 use fs_settings_server::exchange::{Format, ImportMode, import};
 
 mod support;
