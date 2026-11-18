@@ -122,10 +122,10 @@ pub fn build_service(
     let mut service = SettingsService::new(person, instance);
     let claims = Arc::clone(&log);
     service.claimed_by = Some(Arc::new(move |by: &str| {
-        claims(&fs_settings_rpc::claim_line(by))
+        claims(&fs_settings_rpc::claim_line(by));
     }));
     service.refused_note = Some(Arc::new(move |code: &str| {
-        log(&fs_settings_rpc::refused_line(code))
+        log(&fs_settings_rpc::refused_line(code));
     }));
     service
 }
