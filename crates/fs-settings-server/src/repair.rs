@@ -59,7 +59,10 @@ fn newest_export(dir: &Path) -> Option<PathBuf> {
     let mut best: Option<(std::time::SystemTime, PathBuf)> = None;
     for entry in std::fs::read_dir(dir).ok()?.flatten() {
         let name = entry.file_name().to_string_lossy().into_owned();
-        let ext = Path::new(&name).extension().and_then(|e| e.to_str()).unwrap_or("");
+        let ext = Path::new(&name)
+            .extension()
+            .and_then(|e| e.to_str())
+            .unwrap_or("");
         let is_export = name.starts_with("settings-export")
             && (ext.eq_ignore_ascii_case("toml") || ext.eq_ignore_ascii_case("json"));
         let Some(time) = entry

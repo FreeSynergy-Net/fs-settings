@@ -9,8 +9,8 @@ use fs_conformance::{Options, run};
 use fs_settings::coded_stub::Coded;
 use fs_settings::suite::{StoreFixture, StoreSuite};
 use fs_settings::{
-    Health, Instance, InstanceLogEntry, InstanceStore, LockChange, Place, ProfileSet,
-    Raw, Scope, SettingCode, SettingKey, SettingsStore, Snapshot, Stamp, Stampd,
+    Health, Instance, InstanceLogEntry, InstanceStore, LockChange, Place, ProfileSet, Raw, Scope,
+    SettingCode, SettingKey, SettingsStore, Snapshot, Stamp, Stampd,
 };
 use fs_settings_server::DbSettingsStore;
 use fs_types::ObjectId;
@@ -127,14 +127,15 @@ impl StoreFixture for DbFixture {
     }
 }
 
-/// KC16: 12 rules, conformant, none skipped.
-#[tokio::test]
-async fn kc16_store_suite_over_the_database() {
+/// KC16: 12 rules, conformant, none skipped. The suite is driven by a plain executor, not by a tokio runtime: the store's port is sync
+/// and starts its own runtime (it must not be called from inside one).
+#[test]
+fn kc16_store_suite_over_the_database() {
     let mut fixture = DbFixture {
         dir: tempfile::tempdir().unwrap(),
         made: Mutex::new(Vec::new()),
     };
-    let report = run(&StoreSuite, &mut fixture, &Options::default()).await;
+    let report = futures::executor::block_on(run(&StoreSuite, &mut fixture, &Options::default()));
     assert!(report.is_conformant(), "{:?}", report.failures);
     assert_eq!((report.checked, report.skipped.len()), (12, 0));
 }

@@ -37,6 +37,7 @@ fn kc6_eight_concurrent_writes() {
     let store = Arc::new(open(&db_file(dir.path())));
     let before = store.stamp();
     let rt = tokio::runtime::Builder::new_current_thread()
+        .enable_time()
         .build()
         .unwrap();
     let done = rt.block_on(async {

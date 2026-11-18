@@ -14,19 +14,28 @@ use crate::ports::{
 };
 use crate::prim::{to_prim, to_raw};
 
-/// A write refused because the key is locked: `locked{key, reason, by}` when the lock can be read, else `locked{key}`.
+/// The rows' error of a write, as a code; a lock the caller can read is filled in (`locked{key, reason, by}`). Called OUTSIDE `run`:
+/// reading the instance layer takes the same gate (a call from inside would wait for itself).
 pub(crate) fn lock_error(
-    db: &DbSettingsStore,
     e: &RowsError,
+    file: &std::path::Path,
     key: &SettingKey,
 ) -> Coded<SettingCode> {
-    let mapped = map(e, db.file(), Some(key.as_str()));
-    if mapped.code() == SettingCode::Locked
+    map(e, file, Some(key.as_str()))
+}
+
+/// Adds reason and actor to a bare `locked{key}`.
+pub(crate) fn enrich(
+    db: &DbSettingsStore,
+    code: Coded<SettingCode>,
+    key: &SettingKey,
+) -> Coded<SettingCode> {
+    if code.code() == SettingCode::Locked
         && let Some(lock) = db.instance().locks.get(key)
     {
         return locked(key, lock);
     }
-    mapped
+    code
 }
 
 fn action_word(action: &str) -> &'static str {
@@ -113,9 +122,11 @@ impl InstanceStore for DbSettingsStore {
             };
             rows.put_instance(key.as_str(), prim.as_ref(), actor, at)
                 .await
-                .map_err(|e| lock_error(self, &e, key))
+                .map_err(|e| lock_error(&e, &self.file, key))
         };
-        self.run(write).map(changed)
+        self.run(write)
+            .map(changed)
+            .map_err(|c| enrich(self, c, key))
     }
 
     fn write_lock(
@@ -139,9 +150,11 @@ impl InstanceStore for DbSettingsStore {
                 }
                 LockChange::Unlock { reason } => rows.unlock(key.as_str(), reason, actor, at).await,
             };
-            done.map_err(|e| lock_error(self, &e, key))
+            done.map_err(|e| lock_error(&e, &self.file, key))
         };
-        self.run(write).map(changed)
+        self.run(write)
+            .map(changed)
+            .map_err(|c| enrich(self, c, key))
     }
 
     fn instance_log(&self, after: Option<ObjectId>, size: u32) -> Vec<InstanceLogEntry> {

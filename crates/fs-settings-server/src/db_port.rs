@@ -3,7 +3,7 @@
 use std::collections::BTreeMap;
 
 use crate::db_index::{changes, to_set};
-use crate::db_instance::lock_error;
+use crate::db_instance::{enrich, lock_error};
 use crate::db_store::DbSettingsStore;
 use crate::error_map::{from_profile_code, map, profile};
 use crate::ports::{
@@ -108,9 +108,9 @@ impl SettingsStore for DbSettingsStore {
             )
             .await
             .map(|_| ())
-            .map_err(|e| lock_error(self, &e, key))
+            .map_err(|e| lock_error(&e, &self.file, key))
         };
-        self.run(write)
+        self.run(write).map_err(|c| enrich(self, c, key))
     }
 
     fn clear(&self, scope: &Scope, profile_no: u64) -> Result<(), Coded<SettingCode>> {

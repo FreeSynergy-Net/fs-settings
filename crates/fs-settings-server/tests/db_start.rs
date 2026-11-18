@@ -31,7 +31,7 @@ fn newer_domain() -> Domain {
 /// The domain of a program whose step 2 is another one (a changed step).
 fn changed_domain() -> Domain {
     let mut steps = DOMAIN.steps.to_vec();
-    steps[1] = Step::Sql("SELECT 1");
+    steps[1] = Step::Sql("CREATE TABLE IF NOT EXISTS settings_changed (x INTEGER) STRICT");
     let leaked: &'static [Step] = Box::leak(steps.into_boxed_slice());
     Domain::new(DOMAIN.prefix, DOMAIN.about, DOMAIN.tables, leaked)
 }
