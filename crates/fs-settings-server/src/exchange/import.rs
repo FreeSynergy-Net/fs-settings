@@ -27,8 +27,9 @@ pub enum ImportMode {
 /// What an import needs besides the text.
 #[derive(Clone, Copy, Debug)]
 pub struct ImportEnv<'a> {
-    /// The declarations to check every value against; `None` = the program knows no catalog (the CLI today): counted in `unchecked`.
-    pub catalog: Option<&'a Catalog>,
+    /// The declarations every value is checked against. An undeclared key is NEVER written (`import-conflict{cause=not-declared}`);
+    /// an empty catalog therefore refuses everything (the command line has no declarations of other programs yet).
+    pub catalog: &'a Catalog,
     /// The actor (IRI) of instance writes; without it instance sections are refused.
     pub by: Option<&'a Reference>,
     /// Take device values too.
@@ -44,8 +45,6 @@ pub struct ImportReport {
     pub refused: Vec<Coded<SettingCode>>,
     /// Values that were there already.
     pub same: u32,
-    /// Values taken without a declaration check (no catalog given).
-    pub unchecked: u32,
     /// Device values in the text that were left because `device` is off.
     pub skipped_device: u32,
 }
@@ -78,7 +77,6 @@ pub fn import(
     let mut report = ImportReport {
         refused: planned.refused,
         same: planned.same,
-        unchecked: planned.unchecked,
         skipped_device: planned.skipped_device,
         ..ImportReport::default()
     };

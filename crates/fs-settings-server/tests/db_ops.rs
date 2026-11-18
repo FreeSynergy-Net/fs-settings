@@ -201,3 +201,39 @@ fn kc17_settings_over_the_database() {
         Some((Value::Whole(2), Layer::Instance))
     );
 }
+
+/// KC6b [TEST-MEHRFACH]: sixteen threads, ten rounds, each on its own database: every write is there, the stamp rose by the count, nothing
+/// hangs. This is the evidence that the store needs no mutex around its runtime (a current-thread runtime may be entered by several threads).
+#[test]
+fn kc6b_many_threads_many_rounds() {
+    for round in 0..10 {
+        let dir = tempfile::tempdir().unwrap();
+        let store = Arc::new(open(&db_file(dir.path())));
+        let before = store.stamp().0;
+        let handles: Vec<_> = (0..16_u32)
+            .map(|t| {
+                let store = Arc::clone(&store);
+                std::thread::spawn(move || {
+                    for i in 0..4_u32 {
+                        let k = SettingKey::parse(&format!("fs.shell.t{t}-{i}")).unwrap();
+                        store
+                            .write(
+                                &Scope::General,
+                                Place::Profile,
+                                0,
+                                &k,
+                                Some(&Raw::Int(i64::from(i))),
+                            )
+                            .unwrap();
+                    }
+                })
+            })
+            .collect();
+        for h in handles {
+            h.join().unwrap();
+        }
+        let values = store.profile(&Scope::General, Place::Profile, 0).values;
+        assert_eq!(values.len(), 64, "round {round}");
+        assert_eq!(store.stamp().0, before + 64, "round {round}");
+    }
+}

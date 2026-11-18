@@ -8,7 +8,6 @@ use crate::cli_files::{do_repair, socket_for};
 use crate::clock::system_clock;
 use crate::connect::{admin, ensure};
 use crate::instance_cmd::run_instance;
-use crate::ports::{BasicValue, Reference};
 use crate::reply::Reply;
 use crate::serve::{ServeError, serve};
 use crate::words::{Args, Usage, instance_cmd};
@@ -53,22 +52,22 @@ fn do_instance(words: &[String]) -> Result<Reply, Usage> {
         kept
     };
     let cmd = instance_cmd(&rest)?;
-    let by = match &cmd {
-        crate::words::InstanceCmd::Set { by, .. }
-        | crate::words::InstanceCmd::Clear { by, .. }
-        | crate::words::InstanceCmd::Lock { by, .. }
-        | crate::words::InstanceCmd::Unlock { by, .. } => by.clone(),
-        _ => "urn:fs:reader".to_owned(),
+    // The actor is the OS user of the caller, asked from the system: never a word of the command line.
+    let actor = match crate::actor::os_actor() {
+        Ok(a) => a,
+        Err(c) => return Ok(Reply::failed(&c)),
     };
-    let by = Reference::parse(&by).map_err(|_| Usage {
-        word: "--by".to_owned(),
-    })?;
     let socket =
         match socket_for(socket_word.as_deref(), true).and_then(|s| ensure(&s, true).map(|()| s)) {
             Ok(s) => s,
             Err(c) => return Ok(Reply::failed(&c)),
         };
-    Ok(run_instance(&cmd, &admin(&socket, &by), system_clock()()))
+    Ok(run_instance(
+        &cmd,
+        &admin(&socket, &actor),
+        &actor,
+        system_clock()(),
+    ))
 }
 
 /// Runs `args` (the words after the program name); returns the exit code.

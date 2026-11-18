@@ -2,14 +2,14 @@
 //!
 //! `fs-settings --version | --help`, `serve [--instance] [--data DIR | --settings FILE] [--socket PATH]`,
 //! `instance show | set KEY VALUE | clear KEY | lock KEY VALUE --reason TEXT | unlock KEY --reason TEXT | log [--after ID] [--size N]`
-//! (`--by IRI` mandatory for every change), `export`, `import`, `repair`.
+//! (the actor is the OS user, never a word), `export`, `import`, `repair`.
 
 use std::path::PathBuf;
 
 /// A wrong word: exit code 2, printed as `usage word=<word>`.
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Usage {
-    /// The word that is wrong or missing (`--by`, `--reason`, an unknown word, `command`).
+    /// The word that is wrong or missing (`--reason`, an unknown word such as `--by`, `command`).
     pub word: String,
 }
 
@@ -143,26 +143,17 @@ pub enum InstanceCmd {
     /// Show defaults and locks.
     Show,
     /// Set a default.
-    Set {
-        key: String,
-        value: String,
-        by: String,
-    },
+    Set { key: String, value: String },
     /// Clear a default.
-    Clear { key: String, by: String },
+    Clear { key: String },
     /// Set and lock.
     Lock {
         key: String,
         value: String,
         reason: String,
-        by: String,
     },
     /// Unlock (reason mandatory).
-    Unlock {
-        key: String,
-        reason: String,
-        by: String,
-    },
+    Unlock { key: String, reason: String },
     /// The log.
     Log { after: Option<String>, size: u32 },
 }
@@ -170,7 +161,7 @@ pub enum InstanceCmd {
 /// Reads the words after `instance`.
 ///
 /// # Errors
-/// [`Usage`]: unknown command, missing `--by` (every change), missing `--reason` (lock, unlock), wrong count of words.
+/// [`Usage`]: unknown command, any option that is not a word of the command (`--by` is none: the actor is the OS user, never an argument), missing `--reason` (lock, unlock), wrong count of words.
 pub fn instance_cmd(words: &[String]) -> Result<InstanceCmd, Usage> {
     let (Some(cmd), rest) = (words.first(), words.get(1..).unwrap_or_default()) else {
         return Err(usage("command"));
@@ -183,44 +174,39 @@ pub fn instance_cmd(words: &[String]) -> Result<InstanceCmd, Usage> {
             Err(usage("count"))
         }
     };
-    let by = || args.need("--by").map(str::to_owned);
     match cmd.as_str() {
         "show" => {
             args.only(&[])?;
             pos(0).map(|_| InstanceCmd::Show)
         }
         "set" => {
-            args.only(&["--by"])?;
+            args.only(&[])?;
             let p = pos(2)?;
             Ok(InstanceCmd::Set {
                 key: p[0].clone(),
                 value: p[1].clone(),
-                by: by()?,
             })
         }
         "clear" => {
-            args.only(&["--by"])?;
+            args.only(&[])?;
             Ok(InstanceCmd::Clear {
                 key: pos(1)?[0].clone(),
-                by: by()?,
             })
         }
         "lock" => {
-            args.only(&["--by", "--reason"])?;
+            args.only(&["--reason"])?;
             let p = pos(2)?;
             Ok(InstanceCmd::Lock {
                 key: p[0].clone(),
                 value: p[1].clone(),
                 reason: args.need("--reason")?.to_owned(),
-                by: by()?,
             })
         }
         "unlock" => {
-            args.only(&["--by", "--reason"])?;
+            args.only(&["--reason"])?;
             Ok(InstanceCmd::Unlock {
                 key: pos(1)?[0].clone(),
                 reason: args.need("--reason")?.to_owned(),
-                by: by()?,
             })
         }
         "log" => {

@@ -1,13 +1,12 @@
 //! `DbSettingsStore`: the port `fs-settings` over the rows of `fs-objects` `v5::setting`. The start sequence (PLAN 5.4) lives here.
 //!
 //! Pattern: Adapter (port <- rows). Sync over async: ONE current-thread runtime per store; every call is `block_on` on the CALLER's
-//! thread (closures of `update_index` need not be `Send`). The runtime is behind a `Mutex`: calls from several threads queue instead
-//! of relying on concurrent `block_on` of one current-thread runtime (probe question P3, KC6). The RPC skeleton calls the store
+//! thread (closures of `update_index` need not be `Send`). Several threads may call at once (probe question P3, answered
+//! by KC6/KC6b). The RPC skeleton calls the store
 //! through `spawn_blocking`, never on a runtime thread.
 
 use std::future::Future;
 use std::path::{Path, PathBuf};
-use std::sync::Mutex;
 
 use crate::clock::{Clock, OsUser, system_os_user};
 use crate::error_map::{broken, map};
@@ -18,7 +17,6 @@ use crate::ports::{Coded, DOMAIN, Health, Inspect, SettingCode, SettingRows, Sto
 /// The adapter. Build with [`DbSettingsStore::open`].
 pub struct DbSettingsStore {
     rt: tokio::runtime::Runtime,
-    gate: Mutex<()>,
     pub(crate) store: Option<Store>,
     pub(crate) file: PathBuf,
     pub(crate) health: Health,
@@ -73,7 +71,6 @@ impl DbSettingsStore {
         };
         Ok(Self {
             rt,
-            gate: Mutex::new(()),
             store: started.store,
             file,
             health: started.health,
@@ -104,12 +101,10 @@ impl DbSettingsStore {
         self.created
     }
 
-    /// Runs `f` to the end on the store's runtime (one caller at a time).
+    /// Runs `f` to the end on the store's runtime. Concurrent callers are safe: a current-thread runtime may be entered by several
+    /// threads (the first drives, the others wait for the driver; tokio 1.54 `Runtime::block_on`, "can be called concurrently from
+    /// multiple threads"), and every write is one database transaction anyway. Proof by test: `kc6b_many_threads_many_rounds`.
     pub(crate) fn run<T>(&self, f: impl Future<Output = T>) -> T {
-        let _turn = self
-            .gate
-            .lock()
-            .unwrap_or_else(std::sync::PoisonError::into_inner);
         self.rt.block_on(f)
     }
 

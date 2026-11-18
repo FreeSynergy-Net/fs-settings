@@ -619,13 +619,14 @@ dependencies = [
 [[package]]
 name = "fs-objects"
 version = "0.0.8"
-source = "git+https://github.com/FreeSynergy/fs-objects?rev=74deae4ad3b24accc82e48c73801d581b9e50b5e#74deae4ad3b24accc82e48c73801d581b9e50b5e"
+source = "git+https://github.com/FreeSynergy/fs-objects?rev=3395bf18bc37c3eb3c6ec7500416f995a196badb#3395bf18bc37c3eb3c6ec7500416f995a196badb"
 dependencies = [
  "async-trait",
  "base64",
  "chrono",
  "fs-types",
  "getrandom 0.3.4",
+ "rustix 1.1.6",
  "serde",
  "serde_json",
  "sha2",

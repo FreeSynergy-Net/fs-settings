@@ -15,9 +15,7 @@ use crate::exchange::{ExportScope, ImportEnv, ImportMode, export, import};
 use crate::instance_source::NoInstance;
 use crate::legacy::{LegacyEnv, import_legacy};
 use crate::paths::DbPlace;
-use crate::ports::{
-    BasicValue, Coded, Health, ProgramName, Reference, SettingCode, SettingsStore, params,
-};
+use crate::ports::{Catalog, Coded, Health, ProgramName, SettingCode, SettingsStore, params};
 use crate::reply::{Reply, code_line};
 use crate::serve::legacy_lines;
 use crate::words::{Args, Usage};
@@ -107,7 +105,6 @@ pub(crate) fn do_import(args: &Args) -> Result<Reply, Usage> {
         "--legacy",
         "--device",
         "--instance",
-        "--by",
         "--format",
         "--socket",
         "--data",
@@ -128,21 +125,26 @@ pub(crate) fn do_import(args: &Args) -> Result<Reply, Usage> {
         return Err(usage("FILE"));
     };
     let format = format_of(args, Some(file))?;
-    let by = args
-        .get("--by")
-        .map(|b| Reference::parse(b).map_err(|_| usage("--by")))
-        .transpose()?;
-    if instance && by.is_none() {
-        return Err(usage("--by"));
-    }
+    // The actor of instance writes is the OS user of the caller, from the system; person values need none.
+    let actor = if instance {
+        match crate::actor::os_actor() {
+            Ok(a) => Some(a),
+            Err(c) => return Ok(Reply::failed(&c)),
+        }
+    } else {
+        None
+    };
     let mode = if args.flag("--dry-run") {
         ImportMode::DryRun
     } else {
         ImportMode::Apply
     };
+    // This program knows no declarations of other programs yet: the catalog is empty, so NOTHING undeclared is ever written; every
+    // value is refused (`import-conflict{cause=not-declared}`) and the command ends with 1.
+    let catalog = Catalog::new();
     let env = ImportEnv {
-        catalog: None,
-        by: by.as_ref(),
+        catalog: &catalog,
+        by: actor.as_ref(),
         device: args.flag("--device"),
     };
     let Ok(mut src) = File::open(file) else {
@@ -158,15 +160,18 @@ pub(crate) fn do_import(args: &Args) -> Result<Reply, Usage> {
                     "imported"
                 };
                 let mut lines = vec![format!(
-                    "{word} applied={} same={} refused={} unchecked={} skipped-device={}",
+                    "{word} applied={} same={} refused={} skipped-device={}",
                     r.applied,
                     r.same,
                     r.refused.len(),
-                    r.unchecked,
                     r.skipped_device
                 )];
-                lines.extend(r.refused.iter().map(code_line));
-                Reply::done(lines)
+                let refused: Vec<String> = r.refused.iter().map(code_line).collect();
+                Reply {
+                    exit: i32::from(!refused.is_empty()),
+                    out: std::mem::take(&mut lines),
+                    err: refused,
+                }
             }
             Err(c) => Reply::failed(&c),
         },

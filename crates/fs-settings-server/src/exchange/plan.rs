@@ -16,7 +16,6 @@ pub(super) struct Plan {
     pub ops: Vec<Op>,
     pub refused: Vec<Coded<SettingCode>>,
     pub same: u32,
-    pub unchecked: u32,
     pub skipped_device: u32,
 }
 
@@ -47,10 +46,7 @@ impl Ctx<'_> {
 
     /// The declaration check; `false` = refused (already in `refused`).
     fn declared(&mut self, key: &SettingKey, raw: &Raw, layer: Layer) -> bool {
-        let Some(catalog) = self.env.catalog else {
-            self.plan.unchecked += 1;
-            return true;
-        };
+        let catalog = self.env.catalog;
         let Some(decl) = catalog.get(key) else {
             self.plan.refused.push(conflict(key, "not-declared"));
             return false;

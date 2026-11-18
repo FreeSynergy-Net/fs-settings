@@ -51,10 +51,11 @@ fn id_parse(text: &str) -> Option<ObjectId> {
     Some(ObjectId(bytes))
 }
 
-fn who(by: &str, now: Utc) -> Result<Stampd, Coded<SettingCode>> {
-    let by = Reference::parse(by)
-        .map_err(|_| Coded::new(SettingCode::KeyInvalid).with_text(params::BY, by))?;
-    Ok(Stampd { by, at: now })
+fn who(actor: &Reference, now: Utc) -> Stampd {
+    Stampd {
+        by: actor.clone(),
+        at: now,
+    }
 }
 
 fn key(text: &str) -> Result<SettingKey, Coded<SettingCode>> {
@@ -71,7 +72,12 @@ fn outcome(changed: Result<bool, Coded<SettingCode>>, what: &str, key: &str) -> 
 
 /// Runs one command.
 #[must_use]
-pub fn run_instance(cmd: &InstanceCmd, store: &dyn InstanceStore, now: Utc) -> Reply {
+pub fn run_instance(
+    cmd: &InstanceCmd,
+    store: &dyn InstanceStore,
+    actor: &Reference,
+    now: Utc,
+) -> Reply {
     let result = (|| -> Result<Reply, Coded<SettingCode>> {
         Ok(match cmd {
             InstanceCmd::Show => {
@@ -92,13 +98,13 @@ pub fn run_instance(cmd: &InstanceCmd, store: &dyn InstanceStore, now: Utc) -> R
                 }));
                 Reply::done(lines)
             }
-            InstanceCmd::Set { key: k, value, by } => outcome(
-                store.write_instance(&key(k)?, Some(&infer_raw(value)), &who(by, now)?),
+            InstanceCmd::Set { key: k, value } => outcome(
+                store.write_instance(&key(k)?, Some(&infer_raw(value)), &who(actor, now)),
                 "set",
                 k,
             ),
-            InstanceCmd::Clear { key: k, by } => outcome(
-                store.write_instance(&key(k)?, None, &who(by, now)?),
+            InstanceCmd::Clear { key: k } => outcome(
+                store.write_instance(&key(k)?, None, &who(actor, now)),
                 "cleared",
                 k,
             ),
@@ -106,24 +112,23 @@ pub fn run_instance(cmd: &InstanceCmd, store: &dyn InstanceStore, now: Utc) -> R
                 key: k,
                 value,
                 reason,
-                by,
             } => {
                 let change = LockChange::Lock {
                     value: infer_raw(value),
                     reason: reason.clone(),
                 };
                 outcome(
-                    store.write_lock(&key(k)?, &change, &who(by, now)?),
+                    store.write_lock(&key(k)?, &change, &who(actor, now)),
                     "locked",
                     k,
                 )
             }
-            InstanceCmd::Unlock { key: k, reason, by } => {
+            InstanceCmd::Unlock { key: k, reason } => {
                 let change = LockChange::Unlock {
                     reason: reason.clone(),
                 };
                 outcome(
-                    store.write_lock(&key(k)?, &change, &who(by, now)?),
+                    store.write_lock(&key(k)?, &change, &who(actor, now)),
                     "unlocked",
                     k,
                 )

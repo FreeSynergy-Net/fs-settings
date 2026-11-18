@@ -11,6 +11,7 @@
 #![deny(missing_docs)]
 #![warn(clippy::pedantic)]
 
+mod actor;
 pub mod cli;
 mod cli_db;
 mod cli_files;
@@ -34,6 +35,7 @@ mod reply;
 mod serve;
 mod words;
 
+pub use actor::os_actor;
 pub use clock::{Clock, OsUser, fixed_clock, system_clock, system_os_user};
 pub use db_index::{changes, to_set};
 pub use db_store::DbSettingsStore;
