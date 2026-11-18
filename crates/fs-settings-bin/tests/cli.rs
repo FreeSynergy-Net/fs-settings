@@ -22,6 +22,22 @@ fn bin(home: &Path) -> Command {
     cmd
 }
 
+/// Ends a service that a command of the test may have started by itself (the command line starts one when a word reaches the service
+/// stage; a wrong word must not, but a broken program would): every test leaves NO process behind. [TESTISOLATION]
+fn end_stray_services(home: &Path) {
+    let rt = tokio::runtime::Builder::new_current_thread()
+        .enable_all()
+        .build()
+        .unwrap();
+    let local = tokio::task::LocalSet::new();
+    for name in ["settings.sock", "settings-instance.sock"] {
+        let socket = home.join("run").join("freesynergy").join(name);
+        if socket.exists() {
+            let _ = local.block_on(&rt, fs_rpc::stop_server(&socket));
+        }
+    }
+}
+
 /// KC18: `fs-settings --version` prints `fs-settings <version>` and exits 0.
 #[test]
 fn kc18_version() {
@@ -58,6 +74,7 @@ fn kc12_usage_exits_with_2() {
     ] {
         let home = tempfile::tempdir().unwrap();
         let out = bin(home.path()).args(&words).output().unwrap();
+        end_stray_services(home.path());
         assert_eq!(out.status.code(), Some(2), "{words:?}");
         assert_eq!(
             String::from_utf8_lossy(&out.stderr).trim(),
