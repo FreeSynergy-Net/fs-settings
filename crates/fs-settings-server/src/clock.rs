@@ -42,6 +42,7 @@ pub fn system_os_user() -> OsUser {
 /// Unix: the real user id of the process (`getuid`), as the name the user database (`/etc/passwd`) gives it; the number itself when
 /// there is no such line.
 #[cfg(unix)]
+#[allow(clippy::unnecessary_wraps)] // the same signature as the Windows one, which can fail
 fn os_user_now() -> Option<String> {
     let uid = rustix::process::getuid().as_raw();
     let name = std::fs::read_to_string("/etc/passwd")

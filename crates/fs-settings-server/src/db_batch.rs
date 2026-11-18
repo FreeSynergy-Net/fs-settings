@@ -129,7 +129,7 @@ impl DbSettingsStore {
         let outcome = self.run(run)?;
         Ok(match outcome {
             Outcome::Changed { .. } => u32::try_from(ops.len()).unwrap_or(u32::MAX),
-            _ => 0,
+            Outcome::Same { .. } => 0,
         })
     }
 }
