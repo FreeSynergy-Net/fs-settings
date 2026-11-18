@@ -4,7 +4,7 @@
 
 `fs-settings serve` owns the settings database of a person (and, started with `--instance`, the defaults and locks of an instance). Every program reaches it through the contract `settings` (Cap'n Proto, draft) and never opens the file itself. If the file is broken or newer than the program, the service says so openly (`store-broken`, `store-newer`) and serves the built-in defaults; the file is never touched, never deleted. Only the person's own `fs-settings repair` moves it aside.
 
-Status: **probe, not built.** This tree was written against the sketches of the trait-delta `fs-settings-store` (ENTWURF part C); it has not been compiled yet. The three provisional branch pins in `Cargo.toml` (fs-objects part A, fs-components part B1, fs-rpc part B2) are replaced by `rev` pins for the probe compile. `Cargo.lock` follows with that compile. Written with the help of Claude (Anthropic); every line is reviewed by a person before release.
+Status: **probe.** Compiled and tested against the probe heads of the parts it builds on (see `Cargo.toml`: fs-objects 8adc1e8f, fs-components B1 v2 e0663119, fs-rpc B2 5a0af7f8; provisional `rev` pins, replaced by tags in the cascade): clippy pedantic clean, 24 tests green, 10 of 11 mutants caught (MC11 not caught). Written with the help of Claude (Anthropic); every line is reviewed by a person before release.
 
 ## Where the database lives
 

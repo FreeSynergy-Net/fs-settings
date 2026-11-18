@@ -11,8 +11,8 @@ repository = "https://github.com/FreeSynergy/fs-settings"
 # fs-rpc and fs-components need 1.89.
 rust-version = "1.89"
 
-# One source per library (ADR 0092). PROVISIONAL (probe C, trait-delta fs-settings-store): the three `branch` pins point at the
-# probe branches of parts A and B1/B2 and are replaced by `rev = <head>` (probe compile) and then by tags (cascade, ENTWURF section R).
+# One source per library (ADR 0092). PROVISIONAL (probe C, trait-delta fs-settings-store): the `rev` pins point at the heads of the
+# probe branches of parts A and B1/B2 (probe compile) and are replaced by tags (cascade, ENTWURF section R).
 [workspace.dependencies]
 fs-types = { git = "https://github.com/FreeSynergy/fs-types", tag = "v0.0.1" }
 # Part A: `v5::setting` (SettingRows, Store::inspect, Error::Newer). Branch pin, provisional.
