@@ -135,6 +135,11 @@ pub fn serve(args: &[String]) -> Result<(), ServeError> {
         words.instance.then(|| Arc::clone(&shared)),
     );
     service.now = system_clock();
+    // A `by` a client claims in `admin(by)` is never the actor ([AKTEUR-AUS-VERBINDUNG]); it is written to the program's log, so a
+    // forged claim is visible and never effective. `{by:?}` quotes it: no control character can forge a log line.
+    service.claimed_by = Some(Arc::new(|by: &str| {
+        eprintln!("fs-settings: claimed-by={by:?} ignored");
+    }));
     let identity = ServerIdentity::new(PROGRAM, env!("CARGO_PKG_VERSION"));
     run_until_signal_as(
         &socket,

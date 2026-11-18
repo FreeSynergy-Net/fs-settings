@@ -54,7 +54,7 @@ fn os_user_now() -> Option<String> {
     let mut buffer = [0_u16; 257];
     let mut len = u32::try_from(buffer.len()).ok()?;
     // SAFETY: `buffer` is writable for `len` UTF-16 units; the call writes at most that many and sets `len` (with the final NUL).
-    let done = unsafe { GetUserNameW(buffer.as_mut_ptr(), &mut len) };
+    let done = unsafe { GetUserNameW(buffer.as_mut_ptr(), &raw mut len) };
     if done == 0 {
         return None;
     }

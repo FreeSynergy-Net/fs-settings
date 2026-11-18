@@ -10,94 +10,10 @@ use std::time::{Duration, Instant};
 
 use fs_settings::{Place, ProgramName, Raw, Scope, SettingKey, SettingsStore};
 use fs_settings_rpc::{ClientTimes, RpcSettingsStore};
+use fs_types::BasicValue;
 
-fn bin(home: &Path) -> Command {
-    let mut cmd = Command::new(env!("CARGO_BIN_EXE_fs-settings"));
-    for (name, sub) in [
-        ("HOME", "home"),
-        ("XDG_RUNTIME_DIR", "run"),
-        ("XDG_DATA_HOME", "data"),
-        ("XDG_CONFIG_HOME", "config"),
-        ("XDG_STATE_HOME", "state"),
-    ] {
-        let dir = home.join(sub);
-        std::fs::create_dir_all(&dir).unwrap();
-        cmd.env(name, dir);
-    }
-    cmd
-}
-
-/// A running service; ended (stop, else kill) when dropped.
-struct Service {
-    child: Option<Child>,
-    socket: PathBuf,
-}
-
-impl Service {
-    fn start(home: &Path, data: &Path, instance: bool) -> Self {
-        let socket = home.join("settings.sock");
-        let mut cmd = bin(home);
-        cmd.args(["serve", "--socket"])
-            .arg(&socket)
-            .arg("--data")
-            .arg(data);
-        if instance {
-            cmd.arg("--instance");
-        }
-        let child = cmd
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .spawn()
-            .unwrap();
-        let service = Self {
-            child: Some(child),
-            socket,
-        };
-        let end = Instant::now() + Duration::from_secs(10);
-        while !service.socket.exists() && Instant::now() < end {
-            std::thread::sleep(Duration::from_millis(50));
-        }
-        assert!(service.socket.exists(), "the service did not appear");
-        service
-    }
-
-    /// `Control.stop`, then the exit code.
-    fn stop(mut self) -> i32 {
-        let rt = tokio::runtime::Builder::new_current_thread()
-            .enable_all()
-            .build()
-            .unwrap();
-        let local = tokio::task::LocalSet::new();
-        local.block_on(&rt, async {
-            fs_rpc::stop_server(&self.socket).await.unwrap();
-        });
-        let mut child = self.child.take().unwrap();
-        let end = Instant::now() + Duration::from_secs(10);
-        loop {
-            if let Some(status) = child.try_wait().unwrap() {
-                return status.code().unwrap_or(-1);
-            }
-            assert!(Instant::now() < end, "the service did not stop");
-            std::thread::sleep(Duration::from_millis(50));
-        }
-    }
-}
-
-impl Drop for Service {
-    fn drop(&mut self) {
-        if let Some(mut child) = self.child.take() {
-            let _ = child.kill();
-            let _ = child.wait();
-        }
-    }
-}
-
-fn times() -> ClientTimes {
-    ClientTimes {
-        call: Duration::from_secs(10),
-        retry: Duration::from_secs(1),
-    }
-}
+mod service_kit;
+use service_kit::{Service, bin, times};
 
 /// KC15: the built `fs-settings serve --socket S --data D` and an `RpcSettingsStore`: a value is written, `Control.stop` ends it with
 /// exit 0, and after a new start the value is there.

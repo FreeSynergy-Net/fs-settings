@@ -4,7 +4,7 @@
 
 `fs-settings serve` owns the settings database of a person (and, started with `--instance`, the defaults and locks of an instance). Every program reaches it through the contract `settings` (Cap'n Proto, draft) and never opens the file itself. If the file is broken or newer than the program, the service says so openly (`store-broken`, `store-newer`) and serves the built-in defaults; the file is never touched, never deleted. Only the person's own `fs-settings repair` moves it aside.
 
-Status: **probe.** Compiled and tested against the probe heads of the parts it builds on (see `Cargo.toml`: fs-objects v5-4 3395bf18, fs-components B1 81a83e28 (main), fs-rpc B2 f3f4b374; provisional `rev` pins, replaced by tags in the cascade): clippy pedantic clean, 26 tests green, 12 of 12 mutants caught. Import runs in one database transaction; the OS user in the log comes from the system, never from an environment variable. `export` and `import` work on the database file and refuse while a service holds it (a contract call for a running service is a request to the contract). Written with the help of Claude (Anthropic); every line is reviewed by a person before release.
+Status: **probe.** Compiled and tested on Linux against the probe heads of the parts it builds on (see `Cargo.toml`: fs-objects v5-4 3395bf18, fs-components B1 81a83e28 (main), fs-rpc B2 `unreviewed/probe-fs-settings-rpc-2` f3f4b374; provisional `rev` pins, replaced by tags in the cascade; one source per library): clippy pedantic clean, 32 tests green, 14 of 15 mutants caught (the 15th is equivalent). Rules of the commands: the actor of a change is the OS user of the caller, asked from the system, never a word of the command line (`--by` does not exist) and never an environment variable; a `by` that a client claims over the wire is written to the program's log (`claimed-by="..." ignored`) and never takes effect. `import` needs declarations: this program has none of other programs yet, so an import REFUSES every value (`import-conflict{cause=not-declared}`, exit 1) and writes nothing; it runs in one database transaction. `export` and `import` work on the database file and refuse (`store-busy`) while a service holds it (a contract call for a running service is a request to the contract). Windows: the Windows code is linted and compiled by the Windows CI only, not run by the author. Written with the help of Claude (Anthropic); every line is reviewed by a person before release.
 
 ## Where the database lives
 
@@ -20,9 +20,9 @@ Changed only by a start word: `--data DIR` (`DIR/settings.db`) or `--settings FI
 ```text
 fs-settings --version | --help
 fs-settings serve [--instance] [--data DIR | --settings FILE] [--socket PATH]
-fs-settings instance show | set KEY VALUE | clear KEY | lock KEY VALUE --reason TEXT | unlock KEY --reason TEXT | log [--after ID] [--size N]   (--by IRI mandatory for changes)
-fs-settings export --format toml|json --out FILE [--program P] [--device]
-fs-settings import FILE [--dry-run] [--legacy]
+fs-settings instance show | set KEY VALUE | clear KEY | lock KEY VALUE --reason TEXT | unlock KEY --reason TEXT | log [--after ID] [--size N]   (the actor is the OS user, never a word)
+fs-settings export --format toml|json --out FILE [--program P] [--device] [--instance]
+fs-settings import FILE [--dry-run] [--legacy] [--device] [--instance]
 fs-settings repair [--data DIR | --settings FILE]
 ```
 

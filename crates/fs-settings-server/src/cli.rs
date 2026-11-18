@@ -15,9 +15,9 @@ use crate::words::{Args, Usage, instance_cmd};
 const HELP: &str = "fs-settings --version | --help\n\
 fs-settings serve [--instance] [--data DIR | --settings FILE] [--socket PATH]\n\
 fs-settings instance show | set KEY VALUE | clear KEY | lock KEY VALUE --reason TEXT | unlock KEY --reason TEXT | log [--after ID] [--size N]\n\
-    (every change needs --by IRI; lock and unlock need --reason; --socket PATH names the instance service)\n\
+    (the actor is the OS user of the caller, never a word; lock and unlock need --reason; --socket PATH names the instance service)\n\
 fs-settings export --format toml|json --out FILE [--program P] [--device] [--instance]\n\
-fs-settings import FILE [--dry-run] [--legacy] [--device] [--instance --by IRI]\n\
+fs-settings import FILE [--dry-run] [--legacy] [--device] [--instance]\n\
 fs-settings repair [--data DIR | --settings FILE]\n\
 Without words: makes sure the settings service runs.\n\
 Exit codes: 0 done (also `same`), 1 failed (setting-error-<code> key=value ...), 2 wrong words";
