@@ -1,4 +1,5 @@
 //! `export`: the settings as one deterministic text. Profiles by NAME, device values only with `device`, instance only when asked.
+//! Pattern: Adapter (settings to the exchange document).
 
 use std::collections::BTreeMap;
 use std::io::Write;

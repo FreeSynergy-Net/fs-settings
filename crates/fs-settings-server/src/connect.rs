@@ -1,5 +1,6 @@
 //! The CLI's connection to the services: make sure the service runs (fs-rpc `ensure_single` through fs-settings-rpc `ensure_service`),
 //! then the clients of part B2. Everything assumed of B2's constructors is in this file (see the report).
+//! Pattern: Facade over the clients and `ensure_service` of fs-settings-rpc.
 
 use std::path::Path;
 use std::time::Duration;

@@ -1,4 +1,5 @@
 //! fs-objects `Error` -> `SettingCode` (ENTWURF C.6). The ONE mapping; `Coded` carries the parameters.
+//! Pattern: Adapter (one mapping from the rows' errors to codes).
 
 use std::path::Path;
 

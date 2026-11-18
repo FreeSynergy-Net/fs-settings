@@ -1,6 +1,7 @@
 //! The instance layer of the DB: `InstanceStore` (only for `serve --instance`), reading the instance rows, the log.
 //! Time and OS user are set HERE (the service), never taken from the caller: `Stampd.at` and any caller word are ignored for the
 //! log (ENTWURF C.4; MC9). A caller that is not the instance service gets `read-only{which=instance}`.
+//! Pattern: Adapter (the instance part of the port over the rows).
 
 use std::collections::BTreeMap;
 

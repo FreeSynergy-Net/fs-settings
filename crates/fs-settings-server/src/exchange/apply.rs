@@ -1,6 +1,7 @@
 //! Step three of an import: write the plan. One journal of what was there before; a failing step undoes the journal in reverse and the
 //! created profiles are deleted again (the effective values are as before; stamps and tombstones of ids are not undone, ids are never
 //! reused). Honest limit: this is an undo, not ONE transaction; the rows have no batch yet (request to part A, in the report).
+//! Pattern: Command with an undo journal (Memento).
 
 use super::import::ImportEnv;
 use super::plan::{Op, Target};

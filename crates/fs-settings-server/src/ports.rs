@@ -1,6 +1,7 @@
 //! Everything this crate takes from the libraries below it, in ONE place (Facade). The three libraries (fs-objects part A,
 //! fs-settings part B1, fs-settings-rpc part B2) were not compiled when this was written: a path that differs at the probe compile is
 //! fixed here and nowhere else.
+//! Pattern: Facade (all imports from the libraries below in one place).
 
 pub use fs_objects::v5::setting::{
     Actor, DOMAIN, IndexChange, IndexRows, Outcome, PlaceRow, Prim, ScopeRow, SettingRows, Writer,

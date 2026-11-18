@@ -1,4 +1,5 @@
 //! `impl SettingsStore for DbSettingsStore`: the port over the rows (ENTWURF C.2). Every writing call is ONE transaction of the rows.
+//! Pattern: Adapter (the port `SettingsStore` over the rows).
 
 use std::collections::BTreeMap;
 

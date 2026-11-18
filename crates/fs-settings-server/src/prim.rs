@@ -1,4 +1,5 @@
 //! The 1:1 maps between the port's values and the rows' values (the rows know nothing of fs-settings).
+//! Pattern: Adapter (1:1 value maps).
 
 use crate::ports::{Place, PlaceRow, Prim, Raw, Scope, ScopeRow};
 

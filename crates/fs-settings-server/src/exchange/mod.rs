@@ -11,30 +11,11 @@
 mod apply;
 mod doc;
 mod export;
+mod format;
 mod import;
 mod plan;
 
 pub use doc::{Body, Doc, LockDoc, Scopes, V};
 pub use export::{ExportScope, export};
+pub use format::Format;
 pub use import::{ImportEnv, ImportMode, ImportReport, import, import_with};
-
-/// The text format.
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub enum Format {
-    /// TOML 1.0.
-    Toml,
-    /// JSON (RFC 8259).
-    Json,
-}
-
-impl Format {
-    /// `toml` | `json`.
-    #[must_use]
-    pub fn parse(word: &str) -> Option<Self> {
-        match word {
-            "toml" => Some(Self::Toml),
-            "json" => Some(Self::Json),
-            _ => None,
-        }
-    }
-}

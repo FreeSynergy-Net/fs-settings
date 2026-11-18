@@ -1,4 +1,5 @@
 //! The file-side words: `export`, `import`, `repair` (pure dispatch over the connect and exchange modules).
+//! Pattern: Command (one function per file-side word).
 
 use std::fs::File;
 use std::path::{Path, PathBuf};

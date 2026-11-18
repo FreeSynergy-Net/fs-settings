@@ -1,4 +1,5 @@
 //! The clock and the OS user, as injectable values (tests give their own; the service never takes either from the caller).
+//! Pattern: Strategy (the clock and the OS user are values the caller injects).
 
 use std::sync::Arc;
 use std::time::{SystemTime, UNIX_EPOCH};

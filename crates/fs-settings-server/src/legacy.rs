@@ -4,6 +4,7 @@
 //!
 //! Runs at the first start of a NEW person database (and on `fs-settings import --legacy`). A value is taken only when its key is absent
 //! (O10); a value that does not fit is a line in the report, never silent.
+//! Pattern: Adapter (old published files to the new store), read-only.
 
 use std::path::{Path, PathBuf};
 

@@ -1,5 +1,6 @@
 //! The profile index as the port knows it (`ProfileSet<u64>`: base value = the highest id ever issued, a named profile's value = its id)
 //! and as the rows know it (`IndexRows`, `IndexChange`). Pure functions; tested without a database.
+//! Pattern: Adapter (pure functions between two models of the profile index).
 
 use crate::error_map::from_profile_code;
 use crate::ports::{

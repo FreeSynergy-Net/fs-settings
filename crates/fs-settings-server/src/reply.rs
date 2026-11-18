@@ -1,5 +1,6 @@
 //! What a command answers: exit code and lines. Codes are printed as `setting-error-<code> key=value ...`, never as a sentence
 //! (ADR 0057: the words belong to the program that shows them).
+//! Pattern: Value object (exit code and lines).
 
 use std::fmt::Write;
 

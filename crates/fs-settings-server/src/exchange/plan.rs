@@ -1,4 +1,5 @@
 //! The plan of an import: every value read, named, checked; nothing written. Pure over the stores' read side.
+//! Pattern: Builder (the plan is built before anything is written).
 
 use std::path::Path;
 

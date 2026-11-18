@@ -1,6 +1,7 @@
 //! The `instance` commands over ANY `InstanceStore` (the RPC admin client in the program, the DB in tests): one call each, one
 //! transaction each. `same` (nothing changed) is exit 0 and no log row. Time and OS user are set by the service; the `now` given here
 //! is only filled into `Stampd` and ignored by the service.
+//! Pattern: Command (one call per `instance` word over any `InstanceStore`).
 
 use crate::ports::{
     BasicValue, Coded, InstanceStore, LockChange, ObjectId, Raw, Reference, SettingCode,

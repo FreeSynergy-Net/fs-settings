@@ -1,4 +1,5 @@
 //! Where the person service gets the instance layer. v1: nowhere (c0 decision 5); S7: the client of the instance service.
+//! Pattern: Strategy (where the instance layer comes from) and Null object.
 
 use crate::ports::{Instance, Stamp};
 

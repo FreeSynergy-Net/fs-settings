@@ -1,4 +1,5 @@
 //! The exchange document and its two writers/readers. Value objects with sorted maps (deterministic bytes).
+//! Pattern: Value objects with sorted maps (deterministic text).
 
 use std::collections::BTreeMap;
 
