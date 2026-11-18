@@ -5,7 +5,9 @@
 
 #[cfg(not(unix))]
 use crate::clock::system_os_user;
-use crate::ports::{BasicValue, Coded, Reference, SettingCode, params};
+use crate::ports::{BasicValue, Coded, Reference, SettingCode};
+#[cfg(not(unix))]
+use crate::ports::params;
 
 fn encode(name: &str) -> String {
     use std::fmt::Write;
