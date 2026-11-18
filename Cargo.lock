@@ -639,7 +639,7 @@ dependencies = [
 [[package]]
 name = "fs-rpc"
 version = "0.0.2"
-source = "git+https://github.com/FreeSynergy/fs-rpc?rev=a32251e9daf00c69da69316bfd51c686781819cc#a32251e9daf00c69da69316bfd51c686781819cc"
+source = "git+https://github.com/FreeSynergy/fs-rpc?rev=5a0af7f86a117ac45dd2f46cfba6b6f3f6d22a68#5a0af7f86a117ac45dd2f46cfba6b6f3f6d22a68"
 dependencies = [
  "capnp",
  "capnp-rpc",
@@ -658,6 +658,7 @@ dependencies = [
 [[package]]
 name = "fs-settings"
 version = "0.0.29"
+source = "git+https://github.com/FreeSynergy/fs-components?rev=e06631191fb20f3de63cdc5d9e977b2398eefac0#e06631191fb20f3de63cdc5d9e977b2398eefac0"
 dependencies = [
  "async-trait",
  "fs-conformance",
@@ -680,7 +681,7 @@ dependencies = [
 [[package]]
 name = "fs-settings-rpc"
 version = "0.0.2"
-source = "git+https://github.com/FreeSynergy/fs-rpc?rev=a32251e9daf00c69da69316bfd51c686781819cc#a32251e9daf00c69da69316bfd51c686781819cc"
+source = "git+https://github.com/FreeSynergy/fs-rpc?rev=5a0af7f86a117ac45dd2f46cfba6b6f3f6d22a68#5a0af7f86a117ac45dd2f46cfba6b6f3f6d22a68"
 dependencies = [
  "capnp",
  "capnp-rpc",
@@ -705,6 +706,7 @@ dependencies = [
  "fs-settings",
  "fs-settings-rpc",
  "fs-types",
+ "futures",
  "serde",
  "serde_json",
  "tempfile",

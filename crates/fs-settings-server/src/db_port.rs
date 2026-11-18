@@ -7,8 +7,8 @@ use crate::db_instance::{enrich, lock_error};
 use crate::db_store::DbSettingsStore;
 use crate::error_map::{from_profile_code, map, profile};
 use crate::ports::{
-    Coded, Health, IndexRows, Instance, Lock, Place, ProfileSet, Raw, Scope, SettingCode,
-    SettingKey, SettingsStore, Snapshot, Stamp, Writer, index_step_ok, params,
+    Coded, Health, IndexRows, Instance, Lock, Place, ProfileSet, Raw, RowsError, Scope,
+    SettingCode, SettingKey, SettingsStore, Snapshot, Stamp, Writer, index_step_ok, params,
 };
 use crate::prim::{place_row, scope_row, to_prim, to_raw};
 
@@ -121,7 +121,13 @@ impl SettingsStore for DbSettingsStore {
             rows.clear_profile(id, scope_row(scope), at)
                 .await
                 .map(|_| ())
-                .map_err(|e| map(&e, &self.file, None))
+                .or_else(|e| match &e {
+                    // Clearing what is not there (a deleted or unknown profile) is done already: the store suite wants it idempotent.
+                    RowsError::Invalid(p) if p.first().is_some_and(|p| p.reason == "unknown") => {
+                        Ok(())
+                    }
+                    _ => Err(map(&e, &self.file, None)),
+                })
         };
         self.run(clear)
     }
