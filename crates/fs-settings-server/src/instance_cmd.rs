@@ -4,8 +4,8 @@
 //! Pattern: Command (one call per `instance` word over any `InstanceStore`).
 
 use crate::ports::{
-    BasicValue, Coded, InstanceStore, LockChange, ObjectId, Raw, Reference, SettingCode,
-    SettingKey, Stampd, Utc, params,
+    Coded, InstanceStore, LockChange, ObjectId, Raw, Reference, SettingCode, SettingKey, Stampd,
+    Utc, params,
 };
 use crate::reply::Reply;
 use crate::words::InstanceCmd;
