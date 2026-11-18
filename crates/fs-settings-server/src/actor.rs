@@ -3,9 +3,13 @@
 //!
 //! Pattern: Factory (the one place that makes the actor IRI of a command line).
 
+#[cfg(not(unix))]
 use crate::clock::system_os_user;
-use crate::ports::{BasicValue, Coded, Reference, SettingCode, params};
+#[cfg(not(unix))]
+use crate::ports::{BasicValue, params};
+use crate::ports::{Coded, Reference, SettingCode};
 
+#[cfg(not(unix))]
 fn encode(name: &str) -> String {
     use std::fmt::Write;
     name.bytes().fold(String::new(), |mut s, b| {
@@ -18,12 +22,19 @@ fn encode(name: &str) -> String {
     })
 }
 
-/// The actor IRI of the user who runs this process.
+/// The actor IRI of the user who runs this process: on Unix the one of fs-settings-rpc (`actor_of_os_user`), the service's own form.
 ///
 /// # Errors
 /// `no-right{key=os-user}` when the system names no user (the command is refused, never run as nobody).
 pub fn os_actor() -> Result<Reference, Coded<SettingCode>> {
-    let refused = || Coded::new(SettingCode::NoRight).with_text(params::KEY, "os-user");
-    let name = system_os_user()().ok_or_else(refused)?;
-    Reference::parse(&format!("urn:fs:os-user:{}", encode(&name))).map_err(|_| refused())
+    #[cfg(unix)]
+    {
+        Ok(fs_settings_rpc::actor_of_os_user())
+    }
+    #[cfg(not(unix))]
+    {
+        let refused = || Coded::new(SettingCode::NoRight).with_text(params::KEY, "os-user");
+        let name = system_os_user()().ok_or_else(refused)?;
+        Reference::parse(&format!("urn:fs:os-user:{}", encode(&name))).map_err(|_| refused())
+    }
 }

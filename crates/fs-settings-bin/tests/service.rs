@@ -190,12 +190,12 @@ fn y4_export_and_import_refuse_while_a_service_holds_the_file() {
     drop(service);
 }
 
-/// Y5: the instance log carries the OS user as the SERVICE found it for the connection (B2: `getuid` of the service, the same user),
-/// not the name the CLI-side function would give; and the actor is the OS user of the caller, not a word of the command line.
+/// Y5: the instance log carries the OS user as the SERVICE names it (the one form of B2: name, else number), and the actor is the OS
+/// user of the caller, not a word of the command line. Since B2 and the command line share the form, the mutant "service takes the CLI-side
+/// function" is EQUIVALENT in value and cannot be killed.
 #[cfg(target_os = "linux")]
 #[test]
 fn y5_the_service_logs_its_own_os_user() {
-    use std::os::unix::fs::MetadataExt;
     let home = tempfile::tempdir().unwrap();
     let service = Service::start(home.path(), &home.path().join("db"), true);
     let socket = service.socket.to_str().unwrap().to_owned();
@@ -225,8 +225,8 @@ fn y5_the_service_logs_its_own_os_user() {
         .next()
         .unwrap_or_default()
         .to_owned();
-    let uid = std::fs::metadata("/proc/self").unwrap().uid();
-    assert!(line.contains(&format!("os_user={uid} ")), "{line}");
+    let user = fs_settings_rpc::os_user_name();
+    assert!(line.contains(&format!("os_user={user} ")), "{line}");
     assert!(line.contains("by=urn:fs:os-user:"), "{line}");
     drop(service);
 }

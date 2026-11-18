@@ -1,7 +1,7 @@
 # Mutants of the program fs-settings
 
-Each mutant is made in a COPY of the tree (never in the checkout); the named test must turn red. All 15 ran at the head of the branch
-`unreviewed/probe-fs-settings-serve-2` and turned red (log in the report). MC11 (a mutex around the store's runtime) is gone with the
+Each mutant is made in a COPY of the tree (never in the checkout); the named test must turn red. 14 of 15 ran red at the head of the branch
+`unreviewed/probe-fs-settings-serve-2` (Y5 is equivalent, see below). MC11 (a mutex around the store's runtime) is gone with the
 mutex: tokio documents that a current-thread runtime may be entered by several threads, `kc6b_many_threads_many_rounds` is the evidence.
 
 | Mutant | Edit | Red test |
@@ -20,5 +20,5 @@ mutex: tokio documents that a current-thread runtime may be entered by several t
 | MC13 | `db_batch.rs`: the batch in two transactions | `exchange` kc10, y2, kc9 |
 | Y2 | `exchange/plan.rs`: a held instance lock is planned as a write | `import_checks` y2 |
 | Y4 | `cli_db.rs`: no check whether a service holds the file | `service` y4 |
-| Y5 | `serve.rs`: the service takes the CLI-side OS user, not its own | `service` y5 |
+| Y5 | `serve.rs`: the service takes the CLI-side OS user, not its own | EQUIVALENT since B2 f3f4b374: both give the same form (name, else number), so no test can tell them apart; `service` y5 still pins the form |
 | Y6 | `exchange/plan.rs`: the declaration check off | `import_checks` y6, `service` (import on the command line) |

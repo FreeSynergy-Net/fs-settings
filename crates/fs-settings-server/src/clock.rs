@@ -39,23 +39,12 @@ pub fn system_os_user() -> OsUser {
     Arc::new(os_user_now)
 }
 
-/// Unix: the real user id of the process (`getuid`), as the name the user database (`/etc/passwd`) gives it; the number itself when
-/// there is no such line.
+/// Unix: the ONE form of fs-settings-rpc (`os_user_name`): the name of the effective user from `/etc/passwd`, else the number.
+/// Reused, not written twice: the service and the command line must name the same user the same way.
 #[cfg(unix)]
 #[allow(clippy::unnecessary_wraps)] // the same signature as the Windows one, which can fail
 fn os_user_now() -> Option<String> {
-    let uid = rustix::process::getuid().as_raw();
-    let name = std::fs::read_to_string("/etc/passwd")
-        .ok()
-        .and_then(|text| {
-            text.lines().find_map(|line| {
-                let mut fields = line.split(':');
-                let name = fields.next()?;
-                let id = fields.nth(1)?;
-                (id.parse::<u32>().ok() == Some(uid)).then(|| name.to_owned())
-            })
-        });
-    Some(name.unwrap_or_else(|| uid.to_string()))
+    Some(fs_settings_rpc::os_user_name())
 }
 
 /// Windows: `GetUserNameW` (the account of the process token). Written for the Windows runner of the CI; not run on Linux.
