@@ -6,7 +6,10 @@ use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
 use fs_settings::coded_stub::Coded;
-use fs_settings::{ProgramName, Raw, Scope, SettingCode, SettingKey};
+use fs_settings::{
+    Catalog, Declaration, GroupId, Kind, ProgramName, Raw, Scope, SettingCode, SettingKey, Value,
+};
+use fs_settings_server::exchange::ImportEnv;
 use fs_settings_server::{DbPlace, DbSettingsStore, NoInstance, fixed_clock};
 use fs_types::{BasicValue, Reference, Utc};
 
@@ -92,4 +95,32 @@ pub fn is_code(code: &Coded<SettingCode>, expected: SettingCode) -> bool {
 
 pub fn raw_str(text: &str) -> Raw {
     Raw::Str(text.to_owned())
+}
+
+/// The declarations of the shell keys the tests use (text values).
+pub fn catalog() -> Catalog {
+    let group = GroupId::new("shell").unwrap();
+    let decl = |k: &str| {
+        Declaration::new(
+            key(k),
+            Kind::Text { max_chars: 64 },
+            Value::Text(String::new()),
+            group.clone(),
+        )
+    };
+    Catalog::of(
+        ["language", "frontend", "scheme", "style"]
+            .iter()
+            .map(|l| decl(&format!("fs.shell.{l}")))
+            .collect(),
+    )
+    .unwrap()
+}
+
+pub fn env<'a>(by: Option<&'a fs_types::Reference>, catalog: &'a Catalog) -> ImportEnv<'a> {
+    ImportEnv {
+        catalog,
+        by,
+        device: true,
+    }
 }
