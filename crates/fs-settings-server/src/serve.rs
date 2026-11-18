@@ -7,13 +7,12 @@
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use fs_rpc::{ServerIdentity, run_until_signal_as};
-use fs_settings_rpc::SettingsService;
+use fs_rpc::{ServerIdentity, run_until_signal_callers};
 
-use crate::clock::system_clock;
 use crate::db_store::DbSettingsStore;
 use crate::instance_source::NoInstance;
 use crate::legacy::{LegacyEnv, LegacyLine, import_legacy};
+use crate::per_caller::{PerCaller, stderr_sink};
 use crate::ports::{Coded, Health, SettingCode, SettingsStore};
 use crate::reply::code_line;
 use crate::words::{Args, ServeWords, serve_words};
@@ -117,9 +116,8 @@ pub fn serve(args: &[String]) -> Result<(), ServeError> {
     let failed = |c: &Coded<SettingCode>| ServeError::Failed(code_line(c));
     let socket = socket_of(&words).map_err(|c| failed(&c))?;
     let (store, lines) = open_store(&words, &LegacyEnv::from_process()).map_err(|c| failed(&c))?;
-    let store = store.with_os_user(Arc::new(|| {
-        fs_settings_rpc::current_os_user().or_else(|| crate::clock::system_os_user()())
-    }));
+    // The OS user of a write is the one the service set for the connection (`current_os_user` during the call): none of our own.
+    let store = store.with_os_user(Arc::new(fs_settings_rpc::current_os_user));
     for line in legacy_lines(&lines) {
         eprintln!("fs-settings: {line}");
     }
@@ -130,21 +128,12 @@ pub fn serve(args: &[String]) -> Result<(), ServeError> {
         }
     }
     let shared = Arc::new(store);
-    let mut service = SettingsService::new(
+    let per_caller = PerCaller::new(
         Arc::clone(&shared),
         words.instance.then(|| Arc::clone(&shared)),
+        stderr_sink(),
     );
-    service.now = system_clock();
-    // A `by` a client claims in `admin(by)` is never the actor ([AKTEUR-AUS-VERBINDUNG]); it is written to the program's log, so a
-    // forged claim is visible and never effective. `{by:?}` quotes it: no control character can forge a log line.
-    service.claimed_by = Some(Arc::new(|by: &str| {
-        eprintln!("fs-settings: claimed-by={by:?} ignored");
-    }));
     let identity = ServerIdentity::new(PROGRAM, env!("CARGO_PKG_VERSION"));
-    run_until_signal_as(
-        &socket,
-        identity,
-        move || async move { Ok(service.bootstrap()) },
-    )
-    .map_err(|e| ServeError::Failed(format!("serve-failed cause={e}")))
+    run_until_signal_callers(&socket, identity, move || async move { Ok(per_caller) })
+        .map_err(|e| ServeError::Failed(format!("serve-failed cause={e}")))
 }

@@ -5,11 +5,8 @@
 
 #[cfg(not(unix))]
 use crate::clock::system_os_user;
-#[cfg(not(unix))]
-use crate::ports::{BasicValue, params};
-use crate::ports::{Coded, Reference, SettingCode};
+use crate::ports::{BasicValue, Coded, Reference, SettingCode, params};
 
-#[cfg(not(unix))]
 fn encode(name: &str) -> String {
     use std::fmt::Write;
     name.bytes().fold(String::new(), |mut s, b| {
@@ -37,4 +34,19 @@ pub fn os_actor() -> Result<Reference, Coded<SettingCode>> {
         let name = system_os_user()().ok_or_else(refused)?;
         Reference::parse(&format!("urn:fs:os-user:{}", encode(&name))).map_err(|_| refused())
     }
+}
+
+/// The actor of a connection: `urn:fs:os-user:<Caller::id>`, from the id the system gave for the connection and NOTHING else (not the
+/// name, which is for display only and may not exist; not a claim of the client).
+#[must_use]
+pub fn actor_of_caller(caller: &fs_rpc::Caller) -> Reference {
+    Reference::parse(&format!("urn:fs:os-user:{}", encode(caller.id()))).unwrap_or_else(|_| {
+        unreachable!("`urn:fs:os-user:` and percent-encoded text is a valid IRI")
+    })
+}
+
+/// What the log shows as the OS user of a connection: the name for display, else the id.
+#[must_use]
+pub fn os_user_label(caller: &fs_rpc::Caller) -> String {
+    caller.name().unwrap_or(caller.id()).to_owned()
 }
