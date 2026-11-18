@@ -4,13 +4,8 @@
 //! when a test fails. Unix only: the socket is a file (a named pipe on Windows has no file to wait for).
 #![cfg(unix)]
 
-use std::path::{Path, PathBuf};
-use std::process::{Child, Command, Stdio};
-use std::time::{Duration, Instant};
-
 use fs_settings::{Place, ProgramName, Raw, Scope, SettingKey, SettingsStore};
-use fs_settings_rpc::{ClientTimes, RpcSettingsStore};
-use fs_types::BasicValue;
+use fs_settings_rpc::RpcSettingsStore;
 
 mod service_kit;
 use service_kit::{Service, bin, times};

@@ -45,11 +45,7 @@ impl Service {
         if instance {
             cmd.arg("--instance");
         }
-        let child = cmd
-            .stdout(Stdio::null())
-            .stderr(Stdio::null())
-            .spawn()
-            .unwrap();
+        let child = cmd.stdout(Stdio::null()).stderr(log).spawn().unwrap();
         let service = Self {
             child: Some(child),
             socket,
