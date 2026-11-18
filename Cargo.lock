@@ -600,24 +600,6 @@ dependencies = [
 
 [[package]]
 name = "fs-objects"
-version = "0.0.6"
-source = "git+https://github.com/FreeSynergy/fs-objects?tag=v0.0.6#cc3102a53968c4fc8e900a8193d4d15593e12881"
-dependencies = [
- "async-trait",
- "base64",
- "chrono",
- "serde",
- "serde_json",
- "sha2",
- "thiserror",
- "tokio",
- "turso",
- "unicode-normalization",
- "uuid",
-]
-
-[[package]]
-name = "fs-objects"
 version = "0.0.8"
 source = "git+https://github.com/FreeSynergy/fs-objects?rev=3395bf18bc37c3eb3c6ec7500416f995a196badb#3395bf18bc37c3eb3c6ec7500416f995a196badb"
 dependencies = [
@@ -640,13 +622,13 @@ dependencies = [
 [[package]]
 name = "fs-rpc"
 version = "0.0.2"
-source = "git+https://github.com/FreeSynergy/fs-rpc?rev=5d82b40c120d643c510fbeeb4c38407ad0f6a2f2#5d82b40c120d643c510fbeeb4c38407ad0f6a2f2"
+source = "git+https://github.com/FreeSynergy/fs-rpc?rev=f3f4b374eb1ff69ce655382943a9862f5cac8cd6#f3f4b374eb1ff69ce655382943a9862f5cac8cd6"
 dependencies = [
  "capnp",
  "capnp-rpc",
  "chrono",
  "fs-interfaces",
- "fs-objects 0.0.6",
+ "fs-objects",
  "fs-types",
  "futures",
  "rustix 1.1.6",
@@ -682,7 +664,7 @@ dependencies = [
 [[package]]
 name = "fs-settings-rpc"
 version = "0.0.2"
-source = "git+https://github.com/FreeSynergy/fs-rpc?rev=5d82b40c120d643c510fbeeb4c38407ad0f6a2f2#5d82b40c120d643c510fbeeb4c38407ad0f6a2f2"
+source = "git+https://github.com/FreeSynergy/fs-rpc?rev=f3f4b374eb1ff69ce655382943a9862f5cac8cd6#f3f4b374eb1ff69ce655382943a9862f5cac8cd6"
 dependencies = [
  "capnp",
  "capnp-rpc",
@@ -702,7 +684,7 @@ dependencies = [
  "async-trait",
  "capnp",
  "fs-conformance",
- "fs-objects 0.0.8",
+ "fs-objects",
  "fs-rpc",
  "fs-settings",
  "fs-settings-rpc",
