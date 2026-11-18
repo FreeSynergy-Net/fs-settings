@@ -63,17 +63,69 @@ pub(crate) fn process_user() -> Option<(String, Option<String>)> {
     Some((uid.to_string(), name))
 }
 
-/// Windows: see the Unix one. Written for the Windows runner of the CI; not run on Linux.
+/// Windows: the id is the SID of the process token (`GetTokenInformation(TokenUser)`, as text), the name is the account name
+/// (`GetUserNameW`, display only: it may hold spaces and is never the actor). The service takes the SID of the pipe client the same way, so
+/// a command line and the service name one user one way. Written for the Windows runner of the CI; NOT run on Linux.
 #[cfg(windows)]
 pub(crate) fn process_user() -> Option<(String, Option<String>)> {
+    use std::ptr::null_mut;
+    use windows_sys::Win32::Foundation::{CloseHandle, HANDLE, LocalFree};
+    use windows_sys::Win32::Security::Authorization::ConvertSidToStringSidW;
+    use windows_sys::Win32::Security::{GetTokenInformation, TOKEN_QUERY, TOKEN_USER, TokenUser};
+    use windows_sys::Win32::System::Threading::{GetCurrentProcess, OpenProcessToken};
     use windows_sys::Win32::System::WindowsProgramming::GetUserNameW;
+
     let mut buffer = [0_u16; 257];
     let mut len = u32::try_from(buffer.len()).ok()?;
     // SAFETY: `buffer` is writable for `len` UTF-16 units; the call writes at most that many and sets `len` (with the final NUL).
-    let done = unsafe { GetUserNameW(buffer.as_mut_ptr(), &raw mut len) };
-    if done == 0 {
+    let named = unsafe { GetUserNameW(buffer.as_mut_ptr(), &raw mut len) };
+    let name = (named != 0)
+        .then(|| String::from_utf16(&buffer[..usize::try_from(len).ok()?.saturating_sub(1)]).ok())
+        .flatten();
+
+    let mut token: HANDLE = null_mut();
+    // SAFETY: `token` receives a handle that is closed below; the process pseudo handle needs no closing.
+    if unsafe { OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &raw mut token) } == 0 {
         return None;
     }
-    let name = String::from_utf16(&buffer[..usize::try_from(len).ok()?.saturating_sub(1)]).ok()?;
-    Some((name.clone(), Some(name)))
+    let sid = (|| {
+        let mut size = 0_u32;
+        // SAFETY: the first call only asks for the size (it fails with "insufficient buffer" and sets `size`).
+        unsafe { GetTokenInformation(token, TokenUser, null_mut(), 0, &raw mut size) };
+        let words = usize::try_from(size).ok()?.div_ceil(8).max(1);
+        let mut buf = vec![0_u64; words];
+        // SAFETY: `buf` is 8-byte aligned and at least `size` bytes; the token handle is open.
+        let done = unsafe {
+            GetTokenInformation(
+                token,
+                TokenUser,
+                buf.as_mut_ptr().cast(),
+                size,
+                &raw mut size,
+            )
+        };
+        if done == 0 {
+            return None;
+        }
+        // SAFETY: the call filled `buf` with a `TOKEN_USER`; its SID points into `buf`, which lives to the end of this closure.
+        let sid = unsafe { (*buf.as_ptr().cast::<TOKEN_USER>()).User.Sid };
+        let mut wide: *mut u16 = null_mut();
+        // SAFETY: `wide` receives a NUL-terminated UTF-16 string allocated by the system, freed with `LocalFree` below.
+        if unsafe { ConvertSidToStringSidW(sid, &raw mut wide) } == 0 {
+            return None;
+        }
+        let mut n = 0_usize;
+        // SAFETY: `wide` is NUL-terminated; the slice covers exactly the characters before the NUL, then the string is freed.
+        unsafe {
+            while *wide.add(n) != 0 {
+                n += 1;
+            }
+            let text = String::from_utf16(std::slice::from_raw_parts(wide, n)).ok();
+            LocalFree(wide.cast());
+            text
+        }
+    })();
+    // SAFETY: `token` was opened above and is closed once.
+    unsafe { CloseHandle(token) };
+    sid.map(|id| (id, name))
 }

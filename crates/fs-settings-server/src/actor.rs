@@ -9,6 +9,13 @@ use fs_rpc::Caller;
 use crate::clock::process_user;
 use crate::ports::{Coded, Reference, SettingCode, params};
 
+/// The actor IRI of a user: `urn:fs:os-user:<id>` from the ID (Unix: the uid, Windows: the SID), the one form the service derives from a
+/// connection (`fs_settings_rpc::actor_of`). The NAME is display only: it may hold spaces, may be missing, and is never the actor.
+#[must_use]
+pub fn actor_of_user(id: impl Into<String>, name: Option<String>) -> Reference {
+    fs_settings_rpc::actor_of(&Caller::new(id, name))
+}
+
 /// The actor IRI of the user who runs this process.
 ///
 /// # Errors
@@ -16,5 +23,5 @@ use crate::ports::{Coded, Reference, SettingCode, params};
 pub fn os_actor() -> Result<Reference, Coded<SettingCode>> {
     let (id, name) = process_user()
         .ok_or_else(|| Coded::new(SettingCode::NoRight).with_text(params::KEY, "os-user"))?;
-    Ok(fs_settings_rpc::actor_of(&Caller::new(id, name)))
+    Ok(actor_of_user(id, name))
 }

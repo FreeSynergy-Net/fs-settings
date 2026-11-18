@@ -8,7 +8,7 @@ use std::time::Duration;
 use fs_rpc::{CommandStarter, Expected, SingleTimes};
 use fs_settings_rpc::{ClientTimes, RpcInstanceAdmin, RpcSettingsStore, ensure_service_with};
 
-use crate::ports::{Coded, Reference, SettingCode};
+use crate::ports::{Coded, SettingCode};
 use crate::serve::PROGRAM;
 
 /// The limits of the CLI's calls, from one place ("einstellbar statt fest": these are the defaults of the words, not facts).
@@ -51,8 +51,9 @@ pub fn manage(socket: &Path) -> RpcSettingsStore {
     RpcSettingsStore::manage(socket, times())
 }
 
-/// The admin client of the instance service for the actor `by`.
+/// The admin client of the instance service. `claim` is the `by` the contract 0.2 still carries: only a CLAIM, which the service logs and
+/// ignores (the actor is the identity of the connection). The command line asks nobody and claims nothing (`""`); the contract 0.3 drops `by`.
 #[must_use]
-pub fn admin(socket: &Path, by: &Reference) -> RpcInstanceAdmin {
-    RpcInstanceAdmin::open(socket, &crate::ports::BasicValue::canonical(by), times())
+pub fn admin(socket: &Path, claim: &str) -> RpcInstanceAdmin {
+    RpcInstanceAdmin::open(socket, claim, times())
 }

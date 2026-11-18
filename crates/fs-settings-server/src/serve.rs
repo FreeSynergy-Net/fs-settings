@@ -101,6 +101,35 @@ pub fn open_store(
     Ok((store, lines))
 }
 
+/// Where the program's log lines go (standard error in the program, a collector in tests).
+pub type LogSink = Arc<dyn Fn(&str) + Send + Sync>;
+
+/// The log of the program: one line per call on standard error.
+#[must_use]
+pub fn stderr_log() -> LogSink {
+    Arc::new(|line| eprintln!("{line}"))
+}
+
+/// The service of the program over its database: a claimed `by` and a refused connection (a caller the system could not name) both go to
+/// `log` (the lines are those of fs-settings-rpc); the actor of every request is derived from the connection by the service itself.
+/// Both hooks are wired here on purpose, so a program that forgets one cannot be silent: `serve_service` tests them.
+#[must_use]
+pub fn build_service(
+    person: Arc<DbSettingsStore>,
+    instance: Option<Arc<DbSettingsStore>>,
+    log: LogSink,
+) -> SettingsService<DbSettingsStore, DbSettingsStore> {
+    let mut service = SettingsService::new(person, instance);
+    let claims = Arc::clone(&log);
+    service.claimed_by = Some(Arc::new(move |by: &str| {
+        claims(&fs_settings_rpc::claim_line(by))
+    }));
+    service.refused_note = Some(Arc::new(move |code: &str| {
+        log(&fs_settings_rpc::refused_line(code))
+    }));
+    service
+}
+
 /// `serve`: `args` are the words after `serve`.
 ///
 /// # Errors
@@ -131,9 +160,10 @@ pub fn serve(args: &[String]) -> Result<(), ServeError> {
     let shared = Arc::new(store);
     // One hub per connection, the actor from the connection's `Caller::id` only; a claimed `by` goes to the log and is ignored
     // (fs-settings-rpc: `SettingsService::callers`). Nothing here names the user: the service asks the system for each connection.
-    let service = SettingsService::new(
+    let service = build_service(
         Arc::clone(&shared),
         words.instance.then(|| Arc::clone(&shared)),
+        stderr_log(),
     );
     let identity = ServerIdentity::new(PROGRAM, env!("CARGO_PKG_VERSION"));
     run_until_signal_callers(

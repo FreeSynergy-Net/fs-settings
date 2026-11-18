@@ -11,7 +11,8 @@ const FORGED: &str = "forged-by-environment";
 
 fn forge() {
     for name in ["USER", "LOGNAME", "USERNAME"] {
-        // SAFETY: the only test of this binary; nothing else reads or writes the environment while it runs.
+        // SAFETY: every test of this binary sets the SAME values and none reads the environment (the code under test asks the system); the
+        // tests run in parallel threads, which is why the values never differ.
         unsafe { std::env::set_var(name, FORGED) };
     }
 }
@@ -60,4 +61,22 @@ fn the_command_line_actor_is_the_id_of_the_process_user() {
     let uid = std::fs::metadata("/proc/self").unwrap().uid();
     let actor = fs_settings_server::os_actor().unwrap();
     assert_eq!(actor.canonical(), format!("urn:fs:os-user:{uid}"));
+}
+
+/// One form per user: the actor is made of the ID (uid, SID); a name, even one with spaces, is display only and never the actor.
+#[test]
+fn the_actor_is_the_id_and_never_the_name() {
+    use fs_types::BasicValue;
+    let unix = fs_settings_server::actor_of_user("1000", Some("ada".to_owned()));
+    assert_eq!(unix.canonical(), "urn:fs:os-user:1000");
+    let windows = fs_settings_server::actor_of_user(
+        "S-1-5-21-111-222-333-1001",
+        Some("Ada Lovelace".to_owned()),
+    );
+    assert_eq!(
+        windows.canonical(),
+        "urn:fs:os-user:S-1-5-21-111-222-333-1001"
+    );
+    let nameless = fs_settings_server::actor_of_user("1000", None);
+    assert_eq!(nameless.canonical(), "urn:fs:os-user:1000");
 }

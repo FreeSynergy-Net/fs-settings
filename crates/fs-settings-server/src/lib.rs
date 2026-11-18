@@ -35,7 +35,7 @@ mod reply;
 mod serve;
 mod words;
 
-pub use actor::os_actor;
+pub use actor::{actor_of_user, os_actor};
 pub use clock::{Clock, OsUser, fixed_clock, system_clock, system_os_user};
 pub use db_index::{changes, to_set};
 pub use db_store::DbSettingsStore;
@@ -46,5 +46,8 @@ pub use paths::{DB_NAME, DbPlace, Env, Os, resolve, resolve_in};
 pub use ports::{Coded, SettingCode};
 pub use repair::{RepairReport, repair};
 pub use reply::{Reply, code_line};
-pub use serve::{HELP, PROGRAM, ServeError, legacy_lines, open_store, serve, socket_of};
+pub use serve::{
+    HELP, LogSink, PROGRAM, ServeError, build_service, legacy_lines, open_store, serve, socket_of,
+    stderr_log,
+};
 pub use words::{Args, InstanceCmd, ServeWords, Usage, instance_cmd, serve_words};

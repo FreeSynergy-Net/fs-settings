@@ -8,6 +8,7 @@ use crate::cli_files::{do_repair, socket_for};
 use crate::clock::system_clock;
 use crate::connect::{admin, ensure};
 use crate::instance_cmd::run_instance;
+use crate::ports::{BasicValue, Reference};
 use crate::reply::Reply;
 use crate::serve::{ServeError, serve};
 use crate::words::{Args, Usage, instance_cmd};
@@ -52,11 +53,11 @@ fn do_instance(words: &[String]) -> Result<Reply, Usage> {
         kept
     };
     let cmd = instance_cmd(&rest)?;
-    // The actor is the OS user of the caller, asked from the system: never a word of the command line.
-    let actor = match crate::actor::os_actor() {
-        Ok(a) => a,
-        Err(c) => return Ok(Reply::failed(&c)),
-    };
+    // The actor of a change is the identity of the CONNECTION, which the service derives itself: this command line asks nobody and claims
+    // nothing. The port wants a `Stampd.by`; the RPC client does not send it, so a fixed placeholder (never an identity of a person).
+    let placeholder = Reference::parse("urn:fs:claim:none").map_err(|_| Usage {
+        word: "actor".to_owned(),
+    })?;
     let socket =
         match socket_for(socket_word.as_deref(), true).and_then(|s| ensure(&s, true).map(|()| s)) {
             Ok(s) => s,
@@ -64,8 +65,8 @@ fn do_instance(words: &[String]) -> Result<Reply, Usage> {
         };
     Ok(run_instance(
         &cmd,
-        &admin(&socket, &actor),
-        &actor,
+        &admin(&socket, ""),
+        &placeholder,
         system_clock()(),
     ))
 }

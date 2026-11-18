@@ -139,6 +139,9 @@ fn y5_the_service_logs_its_own_os_user() {
     let user = fs_settings_server::system_os_user()().unwrap();
     assert!(line.contains(&format!("os_user={user} ")), "{line}");
     assert!(line.contains("by=urn:fs:os-user:"), "{line}");
+    // one form per user: the command line names this user exactly as the service named the connection
+    let actor = fs_types::BasicValue::canonical(&fs_settings_server::os_actor().unwrap());
+    assert!(line.contains(&format!("by={actor} ")), "{line} / {actor}");
     drop(service);
 }
 
