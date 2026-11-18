@@ -59,7 +59,7 @@ impl PerCaller {
         // `{by:?}` quotes the claim: no control character can forge a log line.
         let log = Arc::clone(&self.log);
         service.claimed_by = Some(Arc::new(move |by: &str| {
-            log(&format!("claimed-by={by:?} ignored"))
+            log(&format!("claimed-by={by:?} ignored"));
         }));
         service
     }
