@@ -16,7 +16,7 @@ rust-version = "1.89"
 [workspace.dependencies]
 fs-types = { git = "https://github.com/FreeSynergy/fs-types", tag = "v0.0.1" }
 # Part A: `v5::setting` (SettingRows, Store::inspect, Error::Newer). Branch pin, provisional.
-fs-objects = { git = "https://github.com/FreeSynergy/fs-objects", rev = "74deae4ad3b24accc82e48c73801d581b9e50b5e", features = ["v5"] }
+fs-objects = { git = "https://github.com/FreeSynergy/fs-objects", rev = "3395bf18bc37c3eb3c6ec7500416f995a196badb", features = ["v5"] }
 # Part B1: the port (SettingsStore, InstanceStore, codes, StoreSuite). Package `fs-settings` of the repo fs-components. Branch pin, provisional.
 fs-settings = { git = "https://github.com/FreeSynergy/fs-components", rev = "81a83e28b75cad1b5e25baa8695d50ce9ebd7490" }
 # Part B2: client, server skeleton, `ensure_service`. Branch pin, provisional.
