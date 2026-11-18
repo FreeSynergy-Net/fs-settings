@@ -42,6 +42,7 @@ pub fn map(e: &RowsError, file: &Path, key: Option<&str>) -> Coded<SettingCode> 
     match e {
         RowsError::Invalid(problems) => match problems.first().map(|p| p.reason.as_str()) {
             Some("locked") => with_key(Coded::new(SettingCode::Locked)),
+            Some("actor-missing") => with_key(Coded::new(SettingCode::NoRight)),
             Some("reason-missing") => with_key(Coded::new(SettingCode::ReasonMissing)),
             Some(cause @ ("exists" | "id-invalid" | "unknown")) => profile(cause),
             _ => broken(file, "open"),

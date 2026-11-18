@@ -5,38 +5,11 @@ use std::path::Path;
 
 use super::doc::{Doc, Map, Scopes};
 use super::import::ImportEnv;
+use super::ops::{Op, Target};
 use crate::ports::{
     BasicValue, Coded, InstanceStore, Layer, Place, ProfileName, ProfileRef, ProgramName, Raw,
     Reference, Scope, SettingCode, SettingKey, SettingsStore, params,
 };
-
-/// Whose profile a value goes into.
-#[derive(Clone, Debug)]
-pub(super) enum Target {
-    Base,
-    Named(ProfileName),
-}
-
-/// One write.
-#[derive(Clone, Debug)]
-pub(super) enum Op {
-    Value {
-        target: Target,
-        scope: Scope,
-        place: Place,
-        key: SettingKey,
-        raw: Raw,
-    },
-    Instance {
-        key: SettingKey,
-        raw: Raw,
-    },
-    Lock {
-        key: SettingKey,
-        raw: Raw,
-        reason: String,
-    },
-}
 
 #[derive(Default)]
 pub(super) struct Plan {

@@ -7,10 +7,10 @@ use std::io::Read;
 use std::path::Path;
 
 use super::Format;
-use super::apply::apply;
 use super::doc::Doc;
 use super::plan::{invalid, plan};
-use crate::ports::{Catalog, Coded, InstanceStore, Reference, SettingCode, SettingsStore, Utc};
+use crate::db_store::DbSettingsStore;
+use crate::ports::{Catalog, Coded, InstanceStore, Reference, SettingCode};
 
 /// The biggest text an import reads: settings are small; a device file or a huge file is refused.
 const MAX_BYTES: u64 = 4 * 1024 * 1024;
@@ -31,8 +31,6 @@ pub struct ImportEnv<'a> {
     pub catalog: Option<&'a Catalog>,
     /// The actor (IRI) of instance writes; without it instance sections are refused.
     pub by: Option<&'a Reference>,
-    /// Now, for the instance log (the service sets its own; this is for in-process stores).
-    pub now: Utc,
     /// Take device values too.
     pub device: bool,
 }
@@ -52,39 +50,19 @@ pub struct ImportReport {
     pub skipped_device: u32,
 }
 
-/// Reads `src` as `format` and imports it into `store` (and `instance`, for the instance sections).
+/// Reads `src` as `format` and imports it into `store`: every value is checked first (nothing is written for a broken text), then
+/// ALL writes of the plan run in ONE transaction of the database (`SettingRows::apply`): all or nothing, no undo journal.
 ///
 /// # Errors
-/// `import-invalid{file,line,cause}` for a broken text (nothing changed); the store's own error when a write fails (then everything
-/// written so far is undone; see `apply`).
+/// `import-invalid{file,line,cause}` for a broken text (nothing changed); the store's own error when the transaction fails (then
+/// nothing was written).
 pub fn import(
-    store: &dyn SettingsStore,
-    instance: Option<&dyn InstanceStore>,
+    store: &DbSettingsStore,
     src: &mut dyn Read,
     file: &Path,
     format: Format,
     mode: ImportMode,
     env: &ImportEnv<'_>,
-) -> Result<ImportReport, Coded<SettingCode>> {
-    import_with(store, instance, src, file, format, mode, env, &mut |_| {
-        Ok(())
-    })
-}
-
-/// [`import`] with a hook called before every write step (`0..n`); an `Err` stops the import and undoes it (the test hook of KC10).
-///
-/// # Errors
-/// As [`import`], and the hook's.
-#[allow(clippy::too_many_arguments)]
-pub fn import_with(
-    store: &dyn SettingsStore,
-    instance: Option<&dyn InstanceStore>,
-    src: &mut dyn Read,
-    file: &Path,
-    format: Format,
-    mode: ImportMode,
-    env: &ImportEnv<'_>,
-    step: &mut dyn FnMut(usize) -> Result<(), Coded<SettingCode>>,
 ) -> Result<ImportReport, Coded<SettingCode>> {
     let mut bytes = Vec::new();
     src.take(MAX_BYTES + 1)
@@ -95,6 +73,7 @@ pub fn import_with(
     }
     let text = String::from_utf8(bytes).map_err(|_| invalid(file, 0, "not-text"))?;
     let doc = Doc::read(&text, format).map_err(|(line, cause)| invalid(file, line, &cause))?;
+    let instance: Option<&dyn InstanceStore> = store.is_instance().then_some(store);
     let planned = plan(&doc, store, instance, env, file)?;
     let mut report = ImportReport {
         refused: planned.refused,
@@ -105,7 +84,7 @@ pub fn import_with(
     };
     report.applied = match mode {
         ImportMode::DryRun => u32::try_from(planned.ops.len()).unwrap_or(u32::MAX),
-        ImportMode::Apply => apply(store, instance, env, &planned.ops, step)?,
+        ImportMode::Apply => store.apply_ops(&planned.ops, env.by)?,
     };
     Ok(report)
 }

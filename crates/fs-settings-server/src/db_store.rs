@@ -9,7 +9,7 @@ use std::future::Future;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 
-use crate::clock::{Clock, OsUser, env_os_user};
+use crate::clock::{Clock, OsUser, system_os_user};
 use crate::error_map::{broken, map};
 use crate::instance_source::InstanceSource;
 use crate::paths::{DbPlace, resolve};
@@ -80,7 +80,7 @@ impl DbSettingsStore {
             instance_mode: instance,
             source,
             now,
-            os_user: env_os_user(),
+            os_user: system_os_user(),
             created: started.created,
         })
     }

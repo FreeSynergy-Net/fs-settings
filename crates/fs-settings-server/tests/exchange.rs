@@ -1,23 +1,28 @@
-//! KC8 to KC10: export and import (TOML and JSON), the round trip, errors with a line, a refused key, and an import cut in the middle.
+//! KC8 to KC10: export and import (TOML and JSON), the round trip, errors with a line, a refused key, and a batch that fails in the
+//! middle (all in one transaction: nothing is written).
 
-use fs_settings::{Place, ProfileRef, ProgramName, SettingCode, SettingsStore};
+use std::path::Path;
+
+use fs_settings::{
+    InstanceStore, LockChange, Place, ProfileName, ProfileRef, SettingCode, SettingsStore, Stampd,
+};
 use fs_settings_server::exchange::{
-    ExportScope, Format, ImportEnv, ImportMode, ImportReport, export, import, import_with,
+    ExportScope, Format, ImportEnv, ImportMode, Op, Target, export, import,
 };
 use fs_settings_server::{DbSettingsStore, SettingCode as Code};
 
 mod support;
-use support::{at, db_file, iri, key, open, open_instance, program, raw_str, text_of};
+use support::{at, db_file, iri, key, open_instance, program, raw_str, text_of};
 
 fn exported(store: &DbSettingsStore, format: Format) -> String {
     let mut out = Vec::new();
-    let programs = vec![ProgramName::new("tasks").unwrap()];
+    let programs = store.known_programs().unwrap();
     export(
         store,
         &ExportScope::All(programs),
         true,
         format,
-        std::path::Path::new("out"),
+        Path::new("out"),
         &mut out,
     )
     .unwrap();
@@ -28,70 +33,60 @@ fn env(by: Option<&fs_types::Reference>) -> ImportEnv<'_> {
     ImportEnv {
         catalog: None,
         by,
-        now: at(1_700_000_000_000),
         device: true,
     }
 }
 
 fn fill(store: &DbSettingsStore) {
-    let who = fs_settings::Stampd {
+    let who = Stampd {
         by: iri("https://example.org/admin"),
         at: at(1),
     };
-    store
-        .write(
-            &fs_settings::Scope::General,
-            Place::Profile,
-            0,
-            &key("fs.shell.language"),
-            Some(&raw_str("de")),
-        )
-        .unwrap();
-    store
-        .write(
-            &program("tasks"),
-            Place::Profile,
-            0,
-            &key("fs.shell.frontend"),
-            Some(&raw_str("day")),
-        )
-        .unwrap();
-    store
-        .write(
-            &program("tasks"),
-            Place::Device,
-            0,
-            &key("fs.shell.scheme"),
-            Some(&raw_str("dark")),
-        )
-        .unwrap();
+    let put = |scope: &fs_settings::Scope, place, profile, k: &str, v: &str| {
+        store
+            .write(scope, place, profile, &key(k), Some(&raw_str(v)))
+            .unwrap();
+    };
+    put(
+        &fs_settings::Scope::General,
+        Place::Profile,
+        0,
+        "fs.shell.language",
+        "de",
+    );
+    put(
+        &program("tasks"),
+        Place::Profile,
+        0,
+        "fs.shell.frontend",
+        "day",
+    );
+    put(
+        &program("tasks"),
+        Place::Device,
+        0,
+        "fs.shell.scheme",
+        "dark",
+    );
     store
         .update_index(&mut |set| {
+            let name = ProfileName::new("Arbeit").unwrap();
             *set.get_mut(&ProfileRef::Base).unwrap() = 1;
-            set.create(fs_settings::ProfileName::new("Arbeit").unwrap(), None)?;
-            *set.get_mut(&ProfileRef::Named(
-                fs_settings::ProfileName::new("Arbeit").unwrap(),
-            ))
-            .unwrap() = 1;
+            set.create(name.clone(), None)?;
+            *set.get_mut(&ProfileRef::Named(name)).unwrap() = 1;
             Ok(())
         })
         .unwrap();
+    put(
+        &fs_settings::Scope::General,
+        Place::Profile,
+        1,
+        "fs.shell.language",
+        "en",
+    );
     store
-        .write(
-            &fs_settings::Scope::General,
-            Place::Profile,
-            1,
-            &key("fs.shell.language"),
-            Some(&raw_str("en")),
-        )
+        .write_instance(&key("fs.shell.style"), Some(&raw_str("calm")), &who)
         .unwrap();
-    fs_settings::InstanceStore::write_instance(
-        store,
-        &key("fs.shell.style"),
-        Some(&raw_str("calm")),
-        &who,
-    )
-    .unwrap();
 }
 
 fn rows_of(store: &DbSettingsStore) -> Vec<String> {
@@ -112,7 +107,8 @@ fn rows_of(store: &DbSettingsStore) -> Vec<String> {
     rows
 }
 
-/// KC8: DB -> export -> empty DB -> import -> export: the same bytes, the same rows (the time of change aside), for TOML and for JSON.
+/// KC8: DB -> export (the programs from `SettingRows::programs`) -> empty DB -> import (one transaction) -> export: the same bytes, the
+/// same rows, for TOML and for JSON.
 #[test]
 fn kc8_round_trip() {
     for format in [Format::Toml, Format::Json] {
@@ -122,6 +118,11 @@ fn kc8_round_trip() {
             open_instance(&db_file(two.path()), 20),
         );
         fill(&a);
+        assert_eq!(
+            a.known_programs().unwrap().len(),
+            1,
+            "tasks is the only program with values"
+        );
         let text = exported(&a, format);
         assert_eq!(
             text,
@@ -131,9 +132,8 @@ fn kc8_round_trip() {
         let by = iri("https://example.org/admin");
         let report = import(
             &b,
-            Some(&b),
             &mut text.as_bytes(),
-            std::path::Path::new("in"),
+            Path::new("in"),
             format,
             ImportMode::Apply,
             &env(Some(&by)),
@@ -145,9 +145,8 @@ fn kc8_round_trip() {
         assert_eq!(b.instance().values.values, a.instance().values.values);
         let again = import(
             &b,
-            Some(&b),
             &mut text.as_bytes(),
-            std::path::Path::new("in"),
+            Path::new("in"),
             format,
             ImportMode::Apply,
             &env(Some(&by)),
@@ -170,9 +169,8 @@ fn kc9_errors_dry_run_and_locks() {
     let broken = "[base.values.general]\n\"fs.shell.language\" = \"de\"\nthis is = not toml\n";
     let err = import(
         &store,
-        None,
         &mut broken.as_bytes(),
-        std::path::Path::new("in.toml"),
+        Path::new("in.toml"),
         Format::Toml,
         ImportMode::Apply,
         &env(None),
@@ -191,9 +189,8 @@ fn kc9_errors_dry_run_and_locks() {
         "[base.values.general]\n\"fs.shell.language\" = \"de\"\n\"fs.shell.style\" = \"calm\"\n";
     let dry = import(
         &store,
-        None,
         &mut good.as_bytes(),
-        std::path::Path::new("g"),
+        Path::new("g"),
         Format::Toml,
         ImportMode::DryRun,
         &env(None),
@@ -202,18 +199,21 @@ fn kc9_errors_dry_run_and_locks() {
     assert_eq!(dry.applied, 2);
     assert_eq!(store.stamp(), stamp, "a dry run writes nothing");
 
-    let by = iri("https://example.org/admin");
-    let who = fs_settings::Stampd { by, at: at(2) };
-    let lock = fs_settings::LockChange::Lock {
+    let who = Stampd {
+        by: iri("https://example.org/admin"),
+        at: at(2),
+    };
+    let lock = LockChange::Lock {
         value: fs_settings::Raw::Str("calm".to_owned()),
         reason: "policy".to_owned(),
     };
-    fs_settings::InstanceStore::write_lock(&store, &key("fs.shell.style"), &lock, &who).unwrap();
-    let report: ImportReport = import(
+    store
+        .write_lock(&key("fs.shell.style"), &lock, &who)
+        .unwrap();
+    let report = import(
         &store,
-        None,
         &mut good.as_bytes(),
-        std::path::Path::new("g"),
+        Path::new("g"),
         Format::Toml,
         ImportMode::Apply,
         &env(None),
@@ -235,33 +235,28 @@ fn kc9_errors_dry_run_and_locks() {
     );
 }
 
-/// KC10: a fault after the first write undoes everything: the values are as before and the created profile is gone again.
+/// KC10: a batch that fails in the middle (an instance write without an actor after a value and a new profile) writes NOTHING: no value,
+/// no profile, the stamp as before. This is the transaction of `SettingRows::apply`, not an undo.
 #[test]
 fn kc10_a_fault_in_the_middle_changes_nothing() {
     let dir = tempfile::tempdir().unwrap();
-    let store = open(&db_file(dir.path()));
-    let text = "[base.values.general]\n\"fs.shell.language\" = \"de\"\n\"fs.shell.style\" = \"calm\"\n[profiles.Arbeit.values.general]\n\"fs.shell.language\" = \"en\"\n";
-    let mut step = |i: usize| {
-        if i == 1 {
-            Err(fs_settings::coded_stub::Coded::new(
-                SettingCode::WriteFailed,
-            ))
-        } else {
-            Ok(())
-        }
-    };
-    let err = import_with(
-        &store,
-        None,
-        &mut text.as_bytes(),
-        std::path::Path::new("in"),
-        Format::Toml,
-        ImportMode::Apply,
-        &env(None),
-        &mut step,
-    )
-    .unwrap_err();
-    assert_eq!(err.code(), SettingCode::WriteFailed);
+    let store = open_instance(&db_file(dir.path()), 10);
+    let stamp = store.stamp();
+    let ops = vec![
+        Op::Value {
+            target: Target::Named(ProfileName::new("Arbeit").unwrap()),
+            scope: fs_settings::Scope::General,
+            place: Place::Profile,
+            key: key("fs.shell.language"),
+            raw: raw_str("en"),
+        },
+        Op::Instance {
+            key: key("fs.shell.style"),
+            raw: raw_str("calm"),
+        },
+    ];
+    let err = store.apply_ops(&ops, None).unwrap_err();
+    assert_eq!(err.code(), Code::NoRight, "{err:?}");
     assert!(
         store
             .profile(&fs_settings::Scope::General, Place::Profile, 0)
@@ -271,6 +266,8 @@ fn kc10_a_fault_in_the_middle_changes_nothing() {
     assert_eq!(
         store.index().0.names().count(),
         0,
-        "the profile created for the import is deleted again"
+        "the profile of the batch was never created"
     );
+    assert_eq!(store.stamp(), stamp);
+    assert!(store.instance().values.values.is_empty());
 }

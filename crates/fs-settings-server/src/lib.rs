@@ -12,9 +12,11 @@
 #![warn(clippy::pedantic)]
 
 pub mod cli;
+mod cli_db;
 mod cli_files;
 mod clock;
 mod connect;
+mod db_batch;
 mod db_index;
 mod db_instance;
 mod db_port;
@@ -32,7 +34,7 @@ mod reply;
 mod serve;
 mod words;
 
-pub use clock::{Clock, OsUser, env_os_user, fixed_clock, system_clock};
+pub use clock::{Clock, OsUser, fixed_clock, system_clock, system_os_user};
 pub use db_index::{changes, to_set};
 pub use db_store::DbSettingsStore;
 pub use instance_cmd::{id_text, infer_raw, run_instance};

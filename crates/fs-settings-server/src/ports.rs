@@ -4,7 +4,8 @@
 //! Pattern: Facade (all imports from the libraries below in one place).
 
 pub use fs_objects::v5::setting::{
-    Actor, DOMAIN, IndexChange, IndexRows, Outcome, PlaceRow, Prim, ScopeRow, SettingRows, Writer,
+    Actor, DOMAIN, IndexChange, IndexRows, Outcome, PlaceRow, Prim, ScopeRow, SettingOp,
+    SettingRows, Writer,
 };
 pub use fs_objects::v5::{Error as RowsError, Inspect, Store};
 pub use fs_settings::coded_stub::Param;

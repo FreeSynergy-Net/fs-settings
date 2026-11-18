@@ -117,7 +117,9 @@ pub fn serve(args: &[String]) -> Result<(), ServeError> {
     let failed = |c: &Coded<SettingCode>| ServeError::Failed(code_line(c));
     let socket = socket_of(&words).map_err(|c| failed(&c))?;
     let (store, lines) = open_store(&words, &LegacyEnv::from_process()).map_err(|c| failed(&c))?;
-    let store = store.with_os_user(Arc::new(fs_settings_rpc::current_os_user));
+    let store = store.with_os_user(Arc::new(|| {
+        fs_settings_rpc::current_os_user().or_else(|| crate::clock::system_os_user()())
+    }));
     for line in legacy_lines(&lines) {
         eprintln!("fs-settings: {line}");
     }

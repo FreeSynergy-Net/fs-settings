@@ -8,14 +8,15 @@
 //!
 //! Pattern: Adapter (database <-> text) over the port, so the same code runs over the DB, the memory store and the RPC client.
 
-mod apply;
 mod doc;
 mod export;
 mod format;
 mod import;
+mod ops;
 mod plan;
 
 pub use doc::{Body, Doc, LockDoc, Scopes, V};
 pub use export::{ExportScope, export};
 pub use format::Format;
-pub use import::{ImportEnv, ImportMode, ImportReport, import, import_with};
+pub use import::{ImportEnv, ImportMode, ImportReport, import};
+pub use ops::{Op, Target};

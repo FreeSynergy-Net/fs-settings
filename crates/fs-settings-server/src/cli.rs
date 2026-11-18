@@ -3,7 +3,8 @@
 //! Pattern: Command + Facade. Changes always go to the SERVICE (never to the file: one process owns the database); only `repair`
 //! touches the file, and only when the person runs it.
 
-use crate::cli_files::{do_export, do_import, do_repair, socket_for};
+use crate::cli_db::{do_export, do_import};
+use crate::cli_files::{do_repair, socket_for};
 use crate::clock::system_clock;
 use crate::connect::{admin, ensure};
 use crate::instance_cmd::run_instance;
