@@ -48,3 +48,16 @@ fn the_log_does_not_carry_a_forged_user() {
         .expect("the log names the OS user");
     assert_ne!(user, FORGED);
 }
+
+/// The actor of a command without a connection is the id of the process user, the same IRI the service derives from a connection
+/// (`urn:fs:os-user:<id>`), and a forged environment does not change it.
+#[cfg(target_os = "linux")]
+#[test]
+fn the_command_line_actor_is_the_id_of_the_process_user() {
+    use fs_types::BasicValue;
+    use std::os::unix::fs::MetadataExt;
+    forge();
+    let uid = std::fs::metadata("/proc/self").unwrap().uid();
+    let actor = fs_settings_server::os_actor().unwrap();
+    assert_eq!(actor.canonical(), format!("urn:fs:os-user:{uid}"));
+}
