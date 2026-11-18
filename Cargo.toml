@@ -20,8 +20,8 @@ fs-objects = { git = "https://github.com/FreeSynergy/fs-objects", rev = "3395bf1
 # Part B1: the port (SettingsStore, InstanceStore, codes, StoreSuite). Package `fs-settings` of the repo fs-components. Branch pin, provisional.
 fs-settings = { git = "https://github.com/FreeSynergy/fs-components", rev = "81a83e28b75cad1b5e25baa8695d50ce9ebd7490" }
 # Part B2: client, server skeleton, `ensure_service`. Branch pin, provisional.
-fs-settings-rpc = { git = "https://github.com/FreeSynergy/fs-rpc", rev = "f3f4b374eb1ff69ce655382943a9862f5cac8cd6" }
-fs-rpc = { git = "https://github.com/FreeSynergy/fs-rpc", rev = "f3f4b374eb1ff69ce655382943a9862f5cac8cd6" }
+fs-settings-rpc = { git = "https://github.com/FreeSynergy/fs-rpc", rev = "2473849ae39042885c32cbc7a3fdaa432d47d1e1" }
+fs-rpc = { git = "https://github.com/FreeSynergy/fs-rpc", rev = "2473849ae39042885c32cbc7a3fdaa432d47d1e1" }
 # Same source as the `conformance` feature of fs-settings (B1) pins; the pins must stay equal (one source per library, ADR 0092).
 fs-conformance = { git = "https://github.com/FreeSynergy/fs-types", rev = "339aa24fa61bc8e6c39ea7875d826ec6993cd24f" }
 capnp = "0.27"

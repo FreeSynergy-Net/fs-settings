@@ -8,12 +8,12 @@ use std::path::PathBuf;
 use std::sync::Arc;
 
 use fs_rpc::{ServerIdentity, run_until_signal_callers};
+use fs_settings_rpc::SettingsService;
 
 use crate::clock::system_clock;
 use crate::db_store::DbSettingsStore;
 use crate::instance_source::NoInstance;
 use crate::legacy::{LegacyEnv, LegacyLine, import_legacy};
-use crate::per_caller::{PerCaller, stderr_sink};
 use crate::ports::{Coded, Health, SettingCode, SettingsStore};
 use crate::reply::code_line;
 use crate::words::{Args, ServeWords, serve_words};
@@ -129,12 +129,17 @@ pub fn serve(args: &[String]) -> Result<(), ServeError> {
         }
     }
     let shared = Arc::new(store);
-    let per_caller = PerCaller::new(
+    // One hub per connection, the actor from the connection's `Caller::id` only; a claimed `by` goes to the log and is ignored
+    // (fs-settings-rpc: `SettingsService::callers`). Nothing here names the user: the service asks the system for each connection.
+    let service = SettingsService::new(
         Arc::clone(&shared),
         words.instance.then(|| Arc::clone(&shared)),
-        stderr_sink(),
     );
     let identity = ServerIdentity::new(PROGRAM, env!("CARGO_PKG_VERSION"));
-    run_until_signal_callers(&socket, identity, move || async move { Ok(per_caller) })
-        .map_err(|e| ServeError::Failed(format!("serve-failed cause={e}")))
+    run_until_signal_callers(
+        &socket,
+        identity,
+        move || async move { Ok(service.callers()) },
+    )
+    .map_err(|e| ServeError::Failed(format!("serve-failed cause={e}")))
 }

@@ -136,7 +136,7 @@ fn y5_the_service_logs_its_own_os_user() {
         .next()
         .unwrap_or_default()
         .to_owned();
-    let user = fs_settings_rpc::os_user_name();
+    let user = fs_settings_server::system_os_user()().unwrap();
     assert!(line.contains(&format!("os_user={user} ")), "{line}");
     assert!(line.contains("by=urn:fs:os-user:"), "{line}");
     drop(service);

@@ -39,17 +39,32 @@ pub fn system_os_user() -> OsUser {
     Arc::new(os_user_now)
 }
 
-/// Unix: the ONE form of fs-settings-rpc (`os_user_name`): the name of the effective user from `/etc/passwd`, else the number.
-/// Reused, not written twice: the service and the command line must name the same user the same way.
-#[cfg(unix)]
-#[allow(clippy::unnecessary_wraps)] // the same signature as the Windows one, which can fail
 fn os_user_now() -> Option<String> {
-    Some(fs_settings_rpc::os_user_name())
+    process_user().map(|(id, name)| name.unwrap_or(id))
 }
 
-/// Windows: `GetUserNameW` (the account of the process token). Written for the Windows runner of the CI; not run on Linux.
+/// The user of this process as the system says: `(id, name)`. Unix: the effective user id (`geteuid`, the semantics of `SO_PEERCRED`)
+/// and its name from `/etc/passwd`. Windows: the account name of the process token (`GetUserNameW`; no SID is asked, the name is the
+/// id). This is for commands WITHOUT a connection; a service takes the user of each connection from `fs_rpc::Caller`.
+#[cfg(unix)]
+pub(crate) fn process_user() -> Option<(String, Option<String>)> {
+    let uid = rustix::process::geteuid().as_raw();
+    let name = std::fs::read_to_string("/etc/passwd")
+        .ok()
+        .and_then(|text| {
+            text.lines().find_map(|line| {
+                let mut fields = line.split(':');
+                let name = fields.next()?;
+                let id = fields.nth(1)?;
+                (id.parse::<u32>().ok() == Some(uid) && !name.is_empty()).then(|| name.to_owned())
+            })
+        });
+    Some((uid.to_string(), name))
+}
+
+/// Windows: see the Unix one. Written for the Windows runner of the CI; not run on Linux.
 #[cfg(windows)]
-fn os_user_now() -> Option<String> {
+pub(crate) fn process_user() -> Option<(String, Option<String>)> {
     use windows_sys::Win32::System::WindowsProgramming::GetUserNameW;
     let mut buffer = [0_u16; 257];
     let mut len = u32::try_from(buffer.len()).ok()?;
@@ -58,5 +73,6 @@ fn os_user_now() -> Option<String> {
     if done == 0 {
         return None;
     }
-    String::from_utf16(&buffer[..usize::try_from(len).ok()?.saturating_sub(1)]).ok()
+    let name = String::from_utf16(&buffer[..usize::try_from(len).ok()?.saturating_sub(1)]).ok()?;
+    Some((name.clone(), Some(name)))
 }
