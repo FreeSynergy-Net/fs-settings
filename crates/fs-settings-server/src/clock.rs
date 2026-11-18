@@ -47,6 +47,7 @@ fn os_user_now() -> Option<String> {
 /// and its name from `/etc/passwd`. Windows: the account name of the process token (`GetUserNameW`; no SID is asked, the name is the
 /// id). This is for commands WITHOUT a connection; a service takes the user of each connection from `fs_rpc::Caller`.
 #[cfg(unix)]
+#[allow(clippy::unnecessary_wraps)] // the same signature as the Windows one, which can fail
 pub(crate) fn process_user() -> Option<(String, Option<String>)> {
     let uid = rustix::process::geteuid().as_raw();
     let name = std::fs::read_to_string("/etc/passwd")
