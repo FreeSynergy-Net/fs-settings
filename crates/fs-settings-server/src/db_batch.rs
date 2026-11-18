@@ -8,7 +8,7 @@ use crate::error_map::map;
 use crate::exchange::{Op, Target};
 use crate::ports::{
     Actor, Coded, IndexChange, Outcome, ProfileName, ProfileRef, ProgramName, Reference, Scope,
-    SettingCode, SettingOp, Writer,
+    SettingCode, SettingOp, SettingsStore, Writer,
 };
 use crate::prim::{place_row, scope_row, to_prim};
 
