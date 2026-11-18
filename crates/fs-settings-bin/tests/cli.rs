@@ -5,7 +5,7 @@ use std::path::Path;
 use std::process::Command;
 
 /// The binary with an isolated environment below `home`.
-pub fn bin(home: &Path) -> Command {
+fn bin(home: &Path) -> Command {
     let mut cmd = Command::new(env!("CARGO_BIN_EXE_fs-settings"));
     for (name, sub) in [
         ("HOME", "home"),

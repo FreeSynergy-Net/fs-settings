@@ -202,7 +202,7 @@ fn kc17_settings_over_the_database() {
     );
 }
 
-/// KC6b [TEST-MEHRFACH]: sixteen threads, ten rounds, each on its own database: every write is there, the stamp rose by the count, nothing
+/// KC6b (rule `TEST-MEHRFACH`): sixteen threads, ten rounds, each on its own database: every write is there, the stamp rose by the count, nothing
 /// hangs. This is the evidence that the store needs no mutex around its runtime (a current-thread runtime may be entered by several threads).
 #[test]
 fn kc6b_many_threads_many_rounds() {

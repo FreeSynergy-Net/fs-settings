@@ -69,7 +69,7 @@ impl Service {
             .unwrap();
         let local = tokio::task::LocalSet::new();
         local.block_on(&rt, async {
-            fs_rpc::stop_server(&self.socket).await.unwrap()
+            fs_rpc::stop_server(&self.socket).await.unwrap();
         });
         let mut child = self.child.take().unwrap();
         let end = Instant::now() + Duration::from_secs(10);
