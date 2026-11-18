@@ -45,3 +45,22 @@ fn a_user_without_a_passwd_line_keeps_the_uid() {
         "urn:fs:os-user:4242"
     );
 }
+
+/// The command line's actor for ANY user the system names: a user without a name (NSS or LDAP only, no passwd line) is NOT refused (its uid is
+/// the actor); only "the system names no user" is refused with `no-right`. The pure part of `os_actor`, fed by an injected passwd text.
+#[cfg(unix)]
+#[test]
+fn a_user_without_a_name_gets_an_actor_and_no_user_is_refused() {
+    let passwd = "ada:x:1000:1000:Ada:/home/ada:/bin/sh\n";
+    let nss_only = fs_settings_server::user_of(4242, Some(passwd));
+    assert_eq!(nss_only, ("4242".to_owned(), None));
+    let actor = fs_settings_server::os_actor_of(Some(nss_only))
+        .expect("a user without a passwd line is not refused");
+    assert_eq!(actor.canonical(), "urn:fs:os-user:4242");
+    let named =
+        fs_settings_server::os_actor_of(Some(fs_settings_server::user_of(1000, Some(passwd))))
+            .unwrap();
+    assert_eq!(named.canonical(), "urn:fs:os-user:1000");
+    let refused = fs_settings_server::os_actor_of(None).unwrap_err();
+    assert_eq!(refused.code(), fs_settings_server::SettingCode::NoRight);
+}

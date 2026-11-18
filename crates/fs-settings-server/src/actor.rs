@@ -16,12 +16,23 @@ pub fn actor_of_user(id: impl Into<String>, name: Option<String>) -> Reference {
     fs_settings_rpc::actor_of(&Caller::new(id, name))
 }
 
+/// The actor IRI of a user the system named: `(id, name)` as `process_user` gives it (the PURE part of [`os_actor`], so a test can hand it
+/// any user, also one without a passwd line). A user with no name keeps its id as the actor; only "no user at all" is refused.
+///
+/// # Errors
+/// `no-right{key=os-user}` when the system named no user (the command is refused, never run as nobody).
+pub fn os_actor_of(
+    user: Option<(String, Option<String>)>,
+) -> Result<Reference, Coded<SettingCode>> {
+    let (id, name) =
+        user.ok_or_else(|| Coded::new(SettingCode::NoRight).with_text(params::KEY, "os-user"))?;
+    Ok(actor_of_user(id, name))
+}
+
 /// The actor IRI of the user who runs this process.
 ///
 /// # Errors
 /// `no-right{key=os-user}` when the system names no user (the command is refused, never run as nobody).
 pub fn os_actor() -> Result<Reference, Coded<SettingCode>> {
-    let (id, name) = process_user()
-        .ok_or_else(|| Coded::new(SettingCode::NoRight).with_text(params::KEY, "os-user"))?;
-    Ok(actor_of_user(id, name))
+    os_actor_of(process_user())
 }

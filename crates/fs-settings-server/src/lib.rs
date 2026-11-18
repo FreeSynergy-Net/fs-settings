@@ -35,7 +35,7 @@ mod reply;
 mod serve;
 mod words;
 
-pub use actor::{actor_of_user, os_actor};
+pub use actor::{actor_of_user, os_actor, os_actor_of};
 #[cfg(unix)]
 pub use clock::user_of;
 pub use clock::{Clock, OsUser, fixed_clock, system_clock, system_os_user};
