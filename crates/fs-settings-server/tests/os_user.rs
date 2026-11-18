@@ -21,7 +21,7 @@ fn forge() {
 fn os_user_ignores_the_environment() {
     forge();
     let got = system_os_user()().expect("the OS knows the user of this process");
-    assert!(!got.is_empty());
+    assert_ne!(got, "");
     assert_ne!(got, FORGED);
 }
 
