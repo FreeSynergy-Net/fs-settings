@@ -1,6 +1,6 @@
 # Mutants of the program fs-settings
 
-Each mutant is made in a COPY of the tree (never in the checkout); the named test must turn red. 14 of 15 ran red at the head of the branch
+Each mutant is made in a COPY of the tree (never in the checkout); the named test must turn red. 15 of 16 ran red at the head of the branch
 `unreviewed/probe-fs-settings-serve-2` (Y5 is equivalent, see below). MC11 (a mutex around the store's runtime) is gone with the
 mutex: tokio documents that a current-thread runtime may be entered by several threads, `kc6b_many_threads_many_rounds` is the evidence.
 
@@ -22,3 +22,4 @@ mutex: tokio documents that a current-thread runtime may be entered by several t
 | Y4 | `cli_db.rs`: no check whether a service holds the file | `service` y4 |
 | Y5 | `serve.rs`: the service takes the CLI-side OS user, not its own | EQUIVALENT since B2 f3f4b374: both give the same form (name, else number), so no test can tell them apart; `service` y5 still pins the form |
 | Y6 | `exchange/plan.rs`: the declaration check off | `import_checks` y6, `service` (import on the command line) |
+| Y7 | `serve.rs`: `claimed_by` not wired (a claimed `by` is not logged) | `claims` a_claimed_by_is_logged_and_never_the_actor |
