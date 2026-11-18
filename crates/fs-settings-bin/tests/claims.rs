@@ -51,3 +51,36 @@ fn a_claimed_by_is_logged_and_never_the_actor() {
         "{logged}"
     );
 }
+
+/// The command line claims NOTHING: after `instance set` the service log holds one empty claim (`claimed-by="" ignored`, as the contract 0.2
+/// still carries `by`) and no claim of the process user.
+#[test]
+fn the_command_line_claims_nothing() {
+    let home = tempfile::tempdir().unwrap();
+    let log_file = home.path().join("service.log");
+    let log = std::fs::File::create(&log_file).unwrap();
+    let service =
+        Service::start_logged(home.path(), &home.path().join("db"), true, Stdio::from(log));
+    let socket = service.socket.to_str().unwrap().to_owned();
+    let set = bin(home.path())
+        .args([
+            "instance",
+            "set",
+            "fs.shell.style",
+            "calm",
+            "--socket",
+            &socket,
+        ])
+        .output()
+        .unwrap();
+    assert_eq!(
+        set.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&set.stderr)
+    );
+    drop(service);
+    let logged = std::fs::read_to_string(&log_file).unwrap();
+    assert!(logged.contains("claimed-by=\"\" ignored"), "{logged}");
+    assert!(!logged.contains("claimed-by=\"urn:"), "{logged}");
+}

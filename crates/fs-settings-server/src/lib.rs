@@ -36,6 +36,8 @@ mod serve;
 mod words;
 
 pub use actor::{actor_of_user, os_actor};
+#[cfg(unix)]
+pub use clock::user_of;
 pub use clock::{Clock, OsUser, fixed_clock, system_clock, system_os_user};
 pub use db_index::{changes, to_set};
 pub use db_store::DbSettingsStore;

@@ -43,24 +43,31 @@ fn os_user_now() -> Option<String> {
     process_user().map(|(id, name)| name.unwrap_or(id))
 }
 
+/// The user `uid` as the passwd text says (`None`: no text, or no line for `uid`: a user that only NSS or LDAP know has no line, which is
+/// not an error: the id stays the actor, the name is display only). Unix.
+#[cfg(unix)]
+#[must_use]
+pub fn user_of(uid: u32, passwd: Option<&str>) -> (String, Option<String>) {
+    let name = passwd.and_then(|text| {
+        text.lines().find_map(|line| {
+            let mut fields = line.split(':');
+            let name = fields.next()?;
+            let id = fields.nth(1)?;
+            (id.parse::<u32>().ok() == Some(uid) && !name.is_empty()).then(|| name.to_owned())
+        })
+    });
+    (uid.to_string(), name)
+}
+
 /// The user of this process as the system says: `(id, name)`. Unix: the effective user id (`geteuid`, the semantics of `SO_PEERCRED`)
-/// and its name from `/etc/passwd`. Windows: the account name of the process token (`GetUserNameW`; no SID is asked, the name is the
-/// id). This is for commands WITHOUT a connection; a service takes the user of each connection from `fs_rpc::Caller`.
+/// and its name from `/etc/passwd` ([`user_of`]). Windows: the SID of the process token and the account name (see below). This is for
+/// commands WITHOUT a connection; a service takes the user of each connection from `fs_rpc::Caller`.
 #[cfg(unix)]
 #[allow(clippy::unnecessary_wraps)] // the same signature as the Windows one, which can fail
 pub(crate) fn process_user() -> Option<(String, Option<String>)> {
     let uid = rustix::process::geteuid().as_raw();
-    let name = std::fs::read_to_string("/etc/passwd")
-        .ok()
-        .and_then(|text| {
-            text.lines().find_map(|line| {
-                let mut fields = line.split(':');
-                let name = fields.next()?;
-                let id = fields.nth(1)?;
-                (id.parse::<u32>().ok() == Some(uid) && !name.is_empty()).then(|| name.to_owned())
-            })
-        });
-    Some((uid.to_string(), name))
+    let passwd = std::fs::read_to_string("/etc/passwd").ok();
+    Some(user_of(uid, passwd.as_deref()))
 }
 
 /// Windows: the id is the SID of the process token (`GetTokenInformation(TokenUser)`, as text), the name is the account name

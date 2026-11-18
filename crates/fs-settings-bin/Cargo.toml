@@ -22,3 +22,6 @@ fs-settings-rpc.workspace = true
 fs-rpc.workspace = true
 fs-types.workspace = true
 tokio.workspace = true
+
+[target.'cfg(windows)'.dev-dependencies]
+tokio = { workspace = true, features = ["net", "rt", "macros"] }
