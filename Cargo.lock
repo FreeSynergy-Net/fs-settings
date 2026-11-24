@@ -592,16 +592,6 @@ dependencies = [
 
 [[package]]
 name = "fs-interfaces"
-version = "0.0.34"
-source = "git+https://github.com/FreeSynergy-Net/fs-interfaces?tag=v0.0.34#22abe015d75578e55e9e86880925490da15c1b35"
-dependencies = [
- "capnp",
- "fs-types",
- "semver",
-]
-
-[[package]]
-name = "fs-interfaces"
 version = "0.0.35"
 source = "git+https://github.com/FreeSynergy-Net/fs-interfaces?tag=v0.0.35#4e2624e20f0b5ab4e6620e4c3c85f9d2f5b9240a"
 dependencies = [
@@ -633,13 +623,13 @@ dependencies = [
 
 [[package]]
 name = "fs-rpc"
-version = "0.0.8"
-source = "git+https://github.com/FreeSynergy-Net/fs-rpc?tag=v0.0.8#36390975a085f2372ea03a6101852afbfbcb6d55"
+version = "0.1.0"
+source = "git+https://github.com/FreeSynergy-Net/fs-rpc?tag=v0.1.0#a0123782090dc7e74f20fba164ee10d009f3f985"
 dependencies = [
  "capnp",
  "capnp-rpc",
  "chrono",
- "fs-interfaces 0.0.34",
+ "fs-interfaces",
  "fs-objects",
  "fs-trusted-path",
  "fs-types",
@@ -665,7 +655,7 @@ dependencies = [
 name = "fs-settings-bin"
 version = "0.0.1"
 dependencies = [
- "fs-interfaces 0.0.35",
+ "fs-interfaces",
  "fs-rpc",
  "fs-settings",
  "fs-settings-rpc",
@@ -678,12 +668,12 @@ dependencies = [
 
 [[package]]
 name = "fs-settings-rpc"
-version = "0.0.8"
-source = "git+https://github.com/FreeSynergy-Net/fs-rpc?tag=v0.0.8#36390975a085f2372ea03a6101852afbfbcb6d55"
+version = "0.1.0"
+source = "git+https://github.com/FreeSynergy-Net/fs-rpc?tag=v0.1.0#a0123782090dc7e74f20fba164ee10d009f3f985"
 dependencies = [
  "capnp",
  "capnp-rpc",
- "fs-interfaces 0.0.34",
+ "fs-interfaces",
  "fs-rpc",
  "fs-settings",
  "fs-types",
@@ -716,8 +706,8 @@ dependencies = [
 
 [[package]]
 name = "fs-trusted-path"
-version = "0.0.8"
-source = "git+https://github.com/FreeSynergy-Net/fs-rpc?tag=v0.0.8#36390975a085f2372ea03a6101852afbfbcb6d55"
+version = "0.1.0"
+source = "git+https://github.com/FreeSynergy-Net/fs-rpc?tag=v0.1.0#a0123782090dc7e74f20fba164ee10d009f3f985"
 dependencies = [
  "windows-sys 0.61.2",
 ]
