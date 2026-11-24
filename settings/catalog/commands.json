@@ -1,0 +1,58 @@
+{
+  "module": "settings",
+  "version": "0.0.1",
+  "contract": "settings",
+  "scope": "own-contract",
+  "commands": [
+    {
+      "capability": "settings.get", "call": "Store.profile", "access": "read",
+      "params": [
+        { "path": "key", "type": "text", "required": true },
+        { "path": "program", "type": "text" }
+      ],
+      "help": { "topic": "settings-get", "text": { "en": "Read the value of one setting with the layer it comes from and its lock.", "de": "Liest den Wert einer Einstellung mit der Ebene, aus der er kommt, und ihrer Sperre." } }
+    },
+    {
+      "capability": "settings.set", "call": "Store.write", "access": "write",
+      "params": [
+        { "path": "key", "type": "text", "required": true },
+        { "path": "value", "type": "text", "required": true },
+        { "path": "program", "type": "text" }
+      ],
+      "help": { "topic": "settings-set", "text": { "en": "Change a setting of the person. Refused while a lock holds it; a setting only a human may change is not offered to a bot at all.", "de": "Ändert eine Einstellung der Person. Wird abgelehnt, solange eine Sperre sie hält; eine Einstellung, die nur ein Mensch ändern darf, wird einem Bot gar nicht angeboten." } }
+    },
+    {
+      "capability": "settings.reset", "call": "Store.write", "access": "delete",
+      "params": [
+        { "path": "key", "type": "text", "required": true },
+        { "path": "program", "type": "text" }
+      ],
+      "help": { "topic": "settings-reset", "text": { "en": "Remove the own value of a setting so that the default of the layer below applies again.", "de": "Entfernt den eigenen Wert einer Einstellung, damit wieder der Vorgabewert der Ebene darunter gilt." } }
+    },
+    {
+      "capability": "settings.lock", "call": "Admin.lock", "access": "write",
+      "params": [
+        { "path": "key", "type": "text", "required": true },
+        { "path": "value", "type": "text", "required": true },
+        { "path": "reason", "type": "text", "required": true }
+      ],
+      "help": { "topic": "settings-lock", "text": { "en": "Lock a setting of the instance to a value; the reason is mandatory and goes to the log.", "de": "Sperrt eine Einstellung der Instanz auf einen Wert; der Grund ist Pflicht und kommt ins Protokoll." } }
+    },
+    {
+      "capability": "settings.unlock", "call": "Admin.unlock", "access": "write",
+      "params": [
+        { "path": "key", "type": "text", "required": true },
+        { "path": "reason", "type": "text", "required": true }
+      ],
+      "help": { "topic": "settings-unlock", "text": { "en": "Lift the lock of a setting of the instance; the reason is mandatory and goes to the log.", "de": "Hebt die Sperre einer Einstellung der Instanz auf; der Grund ist Pflicht und kommt ins Protokoll." } }
+    },
+    {
+      "capability": "settings.log", "call": "Admin.log", "access": "read",
+      "params": [
+        { "path": "after", "type": "text" },
+        { "path": "size", "type": "number" }
+      ],
+      "help": { "topic": "settings-log", "text": { "en": "Read the log of the changes and locks of the instance, page by page.", "de": "Liest das Protokoll der Änderungen und Sperren der Instanz, seitenweise." } }
+    }
+  ]
+}

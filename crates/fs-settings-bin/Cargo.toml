@@ -12,10 +12,19 @@ rust-version.workspace = true
 name = "fs-settings"
 path = "src/main.rs"
 
+# The file name of the module service (`<modules>/settings/service`), the same code as `fs-settings`.
+[[bin]]
+name = "service"
+path = "src/service.rs"
+
 [dependencies]
 fs-settings-server = { path = "../fs-settings-server" }
 
 [dev-dependencies]
+# fields-in-groups@1.0.0 (status planned) is in fs-interfaces main aa1a58b5 only, in no tag yet (v0.0.34 is the newest). LOCAL until the tag:
+# dev-dependency only, so the normal graph stays on tags. Take the tag and drop `rev` when fs-interfaces has one.
+fs-interfaces-main = { package = "fs-interfaces", git = "https://github.com/FreeSynergy-Net/fs-interfaces", rev = "aa1a58b5ed09359bae5035d451461e5ed889b1f1" }
+serde_json.workspace = true
 tempfile.workspace = true
 fs-settings.workspace = true
 fs-settings-rpc.workspace = true

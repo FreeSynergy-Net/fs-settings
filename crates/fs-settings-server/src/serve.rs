@@ -166,10 +166,33 @@ pub fn serve(args: &[String]) -> Result<(), ServeError> {
         stderr_log(),
     );
     let identity = ServerIdentity::new(PROGRAM, env!("CARGO_PKG_VERSION"));
-    run_until_signal_callers(
-        &socket,
-        identity,
-        move || async move { Ok(service.callers()) },
-    )
+    let beat_socket = socket.clone();
+    run_until_signal_callers(&socket, identity, move || async move {
+        // The heartbeat of the host (`ping`/`save` on `<socket>.beat`), started after the socket is bound and ticked by the loop of
+        // THIS runtime: a loop that stands still stops ticking, so the host sees a hang and not a false "alive".
+        keep_heartbeat(&beat_socket)?;
+        Ok(service.callers())
+    })
     .map_err(|e| ServeError::Failed(format!("serve-failed cause={e}")))
+}
+
+/// How often the loop of the service says "I am not stuck" (the host's limit is 10 s).
+const TICK: std::time::Duration = std::time::Duration::from_secs(1);
+
+/// Starts the heartbeat next to `socket` and ticks it from a task of the serving runtime; the task (and with it the heartbeat channel)
+/// ends with the run.
+///
+/// # Errors
+/// The heartbeat channel could not be opened (another one answers, the system refuses, the system has none): the service does not
+/// start without it, never a silent success.
+fn keep_heartbeat(socket: &std::path::Path) -> std::io::Result<()> {
+    let beat = fs_rpc::Heartbeat::start(socket)?;
+    tokio::task::spawn_local(async move {
+        let mut every = tokio::time::interval(TICK);
+        loop {
+            every.tick().await;
+            beat.tick();
+        }
+    });
+    Ok(())
 }

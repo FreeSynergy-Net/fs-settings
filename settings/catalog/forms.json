@@ -1,0 +1,40 @@
+[
+  {
+    "name": "fields-in-groups",
+    "version": "1.0",
+    "type": "Setting",
+    "map": {
+      "items": "Setting",
+      "label": "label",
+      "basic": "basic",
+      "value": "value",
+      "group": "group",
+      "hint": "hint",
+      "default": "default",
+      "choices": "choices",
+      "min": "min",
+      "max": "max",
+      "layer": "layer",
+      "locked": "locked",
+      "lock-reason": "lock-reason",
+      "order": "order",
+      "change": "settings.set",
+      "reset": "settings.reset"
+    },
+    "fields": {
+      "label": "text",
+      "basic": "text",
+      "value": "text",
+      "group": "text",
+      "hint": "text",
+      "default": "text",
+      "choices": "text",
+      "min": "number",
+      "max": "number",
+      "layer": "text",
+      "locked": "bool",
+      "lock-reason": "text",
+      "order": "number"
+    }
+  }
+]

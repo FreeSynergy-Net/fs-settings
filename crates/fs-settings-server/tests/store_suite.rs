@@ -6,7 +6,6 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex, RwLock};
 
 use fs_conformance::{Options, run};
-use fs_types::coded::Coded;
 use fs_settings::suite::{StoreFixture, StoreSuite};
 use fs_settings::{
     Health, Instance, InstanceLogEntry, InstanceStore, LockChange, Place, ProfileSet, Raw, Scope,
@@ -14,6 +13,7 @@ use fs_settings::{
 };
 use fs_settings_server::DbSettingsStore;
 use fs_types::ObjectId;
+use fs_types::coded::Coded;
 
 mod support;
 use support::{db_file, open_instance};

@@ -601,6 +601,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "fs-interfaces"
+version = "0.0.34"
+source = "git+https://github.com/FreeSynergy-Net/fs-interfaces?rev=aa1a58b5ed09359bae5035d451461e5ed889b1f1#aa1a58b5ed09359bae5035d451461e5ed889b1f1"
+dependencies = [
+ "capnp",
+ "fs-types",
+ "semver",
+]
+
+[[package]]
 name = "fs-objects"
 version = "0.0.10"
 source = "git+https://github.com/FreeSynergy-Net/fs-objects?tag=v0.0.10#18f68042df4a90ef5f04e0744d6f010c0af214c5"
@@ -629,7 +639,7 @@ dependencies = [
  "capnp",
  "capnp-rpc",
  "chrono",
- "fs-interfaces",
+ "fs-interfaces 0.0.34 (git+https://github.com/FreeSynergy-Net/fs-interfaces?tag=v0.0.34)",
  "fs-objects",
  "fs-trusted-path",
  "fs-types",
@@ -655,11 +665,13 @@ dependencies = [
 name = "fs-settings-bin"
 version = "0.0.1"
 dependencies = [
+ "fs-interfaces 0.0.34 (git+https://github.com/FreeSynergy-Net/fs-interfaces?rev=aa1a58b5ed09359bae5035d451461e5ed889b1f1)",
  "fs-rpc",
  "fs-settings",
  "fs-settings-rpc",
  "fs-settings-server",
  "fs-types",
+ "serde_json",
  "tempfile",
  "tokio",
 ]
@@ -671,7 +683,7 @@ source = "git+https://github.com/FreeSynergy-Net/fs-rpc?tag=v0.0.8#36390975a085f
 dependencies = [
  "capnp",
  "capnp-rpc",
- "fs-interfaces",
+ "fs-interfaces 0.0.34 (git+https://github.com/FreeSynergy-Net/fs-interfaces?tag=v0.0.34)",
  "fs-rpc",
  "fs-settings",
  "fs-types",
