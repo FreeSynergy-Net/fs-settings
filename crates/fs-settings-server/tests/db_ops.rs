@@ -21,7 +21,7 @@ fn name(text: &str) -> ProfileName {
 fn create(
     set: &mut fs_settings::ProfileSet<u64>,
     text: &str,
-) -> Result<(), fs_settings::coded_stub::Coded<ProfileCode>> {
+) -> Result<(), fs_types::coded::Coded<ProfileCode>> {
     let id = set.get(&ProfileRef::Base).copied().unwrap() + 1;
     *set.get_mut(&ProfileRef::Base).unwrap() = id;
     set.create(name(text), None)?;
@@ -97,7 +97,7 @@ fn kc7_profiles_from_two_threads_and_a_failing_closure() {
     let stamp = store.stamp();
     let refused = store.update_index(&mut |set| {
         create(set, "Nie")?;
-        Err(fs_settings::coded_stub::Coded::new(ProfileCode::Unknown))
+        Err(fs_types::coded::Coded::new(ProfileCode::Unknown))
     });
     assert_eq!(refused.unwrap_err().code(), SettingCode::Profile);
     assert_eq!(store.stamp(), stamp, "nothing changed");

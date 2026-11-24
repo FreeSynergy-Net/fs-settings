@@ -172,7 +172,7 @@ fn kc9_errors_dry_run_and_locks() {
     assert_eq!(text_of(&err, "file").as_deref(), Some("in.toml"));
     assert!(
         err.params()
-            .any(|(k, v)| k == "line" && matches!(v, fs_settings::coded_stub::Param::Number(3))),
+            .any(|(k, v)| k == "line" && matches!(v, fs_types::coded::Param::Number(3))),
         "{err:?}"
     );
     assert_eq!(store.stamp(), stamp);

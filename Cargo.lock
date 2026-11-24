@@ -583,25 +583,27 @@ checksum = "1c66915cc5391097de7a2b0b972e8505aa33c0df401fd3a6811dbdb32881ba48"
 
 [[package]]
 name = "fs-conformance"
-version = "0.0.1"
-source = "git+https://github.com/FreeSynergy/fs-types?rev=339aa24fa61bc8e6c39ea7875d826ec6993cd24f#339aa24fa61bc8e6c39ea7875d826ec6993cd24f"
+version = "0.0.5"
+source = "git+https://github.com/FreeSynergy-Net/fs-types?tag=v0.0.6#2f45110417cf42311d5dee72287b7644312d4bc4"
 dependencies = [
  "async-trait",
-]
-
-[[package]]
-name = "fs-interfaces"
-version = "0.0.27"
-source = "git+https://github.com/FreeSynergy/fs-interfaces?tag=v0.0.27#2745e306a13e0b7e7339ffc3f9c09185515fe152"
-dependencies = [
- "capnp",
  "fs-types",
 ]
 
 [[package]]
+name = "fs-interfaces"
+version = "0.0.34"
+source = "git+https://github.com/FreeSynergy-Net/fs-interfaces?tag=v0.0.34#22abe015d75578e55e9e86880925490da15c1b35"
+dependencies = [
+ "capnp",
+ "fs-types",
+ "semver",
+]
+
+[[package]]
 name = "fs-objects"
-version = "0.0.8"
-source = "git+https://github.com/FreeSynergy/fs-objects?rev=3395bf18bc37c3eb3c6ec7500416f995a196badb#3395bf18bc37c3eb3c6ec7500416f995a196badb"
+version = "0.0.10"
+source = "git+https://github.com/FreeSynergy-Net/fs-objects?tag=v0.0.10#18f68042df4a90ef5f04e0744d6f010c0af214c5"
 dependencies = [
  "async-trait",
  "base64",
@@ -621,14 +623,15 @@ dependencies = [
 
 [[package]]
 name = "fs-rpc"
-version = "0.0.2"
-source = "git+https://github.com/FreeSynergy/fs-rpc?rev=14b56b51ba2ce28dd88cc196bb8e14d18c004907#14b56b51ba2ce28dd88cc196bb8e14d18c004907"
+version = "0.0.8"
+source = "git+https://github.com/FreeSynergy-Net/fs-rpc?tag=v0.0.8#36390975a085f2372ea03a6101852afbfbcb6d55"
 dependencies = [
  "capnp",
  "capnp-rpc",
  "chrono",
  "fs-interfaces",
  "fs-objects",
+ "fs-trusted-path",
  "fs-types",
  "futures",
  "rustix 1.1.6",
@@ -640,8 +643,8 @@ dependencies = [
 
 [[package]]
 name = "fs-settings"
-version = "0.0.29"
-source = "git+https://github.com/FreeSynergy/fs-components?rev=81a83e28b75cad1b5e25baa8695d50ce9ebd7490#81a83e28b75cad1b5e25baa8695d50ce9ebd7490"
+version = "0.0.35"
+source = "git+https://github.com/FreeSynergy-Net/fs-components?tag=v0.0.35#0becc479920d1bd512b30800cb0772db1130c27d"
 dependencies = [
  "async-trait",
  "fs-conformance",
@@ -663,8 +666,8 @@ dependencies = [
 
 [[package]]
 name = "fs-settings-rpc"
-version = "0.0.2"
-source = "git+https://github.com/FreeSynergy/fs-rpc?rev=14b56b51ba2ce28dd88cc196bb8e14d18c004907#14b56b51ba2ce28dd88cc196bb8e14d18c004907"
+version = "0.0.8"
+source = "git+https://github.com/FreeSynergy-Net/fs-rpc?tag=v0.0.8#36390975a085f2372ea03a6101852afbfbcb6d55"
 dependencies = [
  "capnp",
  "capnp-rpc",
@@ -700,9 +703,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "fs-trusted-path"
+version = "0.0.8"
+source = "git+https://github.com/FreeSynergy-Net/fs-rpc?tag=v0.0.8#36390975a085f2372ea03a6101852afbfbcb6d55"
+dependencies = [
+ "windows-sys 0.61.2",
+]
+
+[[package]]
 name = "fs-types"
-version = "0.0.1"
-source = "git+https://github.com/FreeSynergy/fs-types?tag=v0.0.1#6323518a1a1abba7c241e94d948668eb208649f5"
+version = "0.0.5"
+source = "git+https://github.com/FreeSynergy-Net/fs-types?tag=v0.0.6#2f45110417cf42311d5dee72287b7644312d4bc4"
 dependencies = [
  "capnp",
  "chrono",
@@ -710,7 +721,9 @@ dependencies = [
  "idna",
  "iri-string",
  "oxilangtag",
+ "semver",
  "unicode-normalization",
+ "zeroize",
 ]
 
 [[package]]
@@ -3047,6 +3060,12 @@ dependencies = [
  "syn 3.0.10",
  "synstructure",
 ]
+
+[[package]]
+name = "zeroize"
+version = "1.9.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "85ccff8a4805aba1eaa4cd4afcd49f7557dd2cf5fd79ffc37f8959466effc5aa"
 
 [[package]]
 name = "zerotrie"

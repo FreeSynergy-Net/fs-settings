@@ -6,7 +6,7 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex, RwLock};
 
 use fs_conformance::{Options, run};
-use fs_settings::coded_stub::Coded;
+use fs_types::coded::Coded;
 use fs_settings::suite::{StoreFixture, StoreSuite};
 use fs_settings::{
     Health, Instance, InstanceLogEntry, InstanceStore, LockChange, Place, ProfileSet, Raw, Scope,

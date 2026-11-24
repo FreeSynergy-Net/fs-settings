@@ -8,7 +8,7 @@ pub use fs_objects::v5::setting::{
     SettingRows, Writer,
 };
 pub use fs_objects::v5::{Error as RowsError, Inspect, Store};
-pub use fs_settings::coded_stub::Param;
+pub use fs_types::coded::Param;
 pub use fs_settings::{
     Catalog, Coded, Health, Instance, InstanceLogEntry, InstanceStore, Layer, Lock, LockChange,
     Place, ProfileCode, ProfileName, ProfileRef, ProfileSet, ProgramName, Raw, Scope, SettingCode,
