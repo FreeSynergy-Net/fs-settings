@@ -6,6 +6,8 @@ Version = tag; all crates of the workspace carry the same version.
 
 ### English
 
+- **Pins lifted (rev on main SHAs).** fs-types and fs-conformance rev `722d3ce0` (0.0.7), fs-interfaces rev `2bb70d82` (0.2.0), fs-objects rev `e38093f1` (0.0.11), fs-components (package fs-settings) rev `9ab4ac28`; `.cargo/config.toml` names `[registries.freesynergy]`. No `non_exhaustive` break in this repo. fs-rpc, fs-settings-rpc (and fs-trusted-path through them) now rev `9cbce63c` (0.1.4, was tag v0.1.0): one stand per fs crate in the lock, `cargo tree -d` shows no fs-* duplicate.
+- **Licence gate.** Every path and git dependency carries a `version` (fs-types, fs-conformance 0.0.7; fs-objects 0.0.11; fs-settings 0.1.0; fs-rpc, fs-settings-rpc 0.1.4; fs-settings-server 0.0.1; fs-interfaces 0.2.0), so `cargo deny` finds no wildcard; `deny.toml` unchanged.
 - **CI pin.** `check.yml` and `windows.yml` call fs-release v0.0.18 (`9eed5c95`, was `485f747`): the lock gate of `485f747` still named the old org as the only source of `fs-types` and was red for every repo on the org FreeSynergy-Net.
 
 - **Fix (first main run red).** `build_service` uses `SettingsService::new_os_user_is_person`: fs-settings-rpc v0.0.8 fails closed (every connection a bot, an empty catalog shows a bot nothing: `not-declared`), the transport admits the OS user of the service only, so that user is the person. Today no connection counts as a bot: every process of the service's OS user, also an AI agent, is the person; other OS users cannot connect. Behaviour kept: a key that is not declared is still refused for a bot and on import. Written with help from Claude (Anthropic).
@@ -22,6 +24,8 @@ Version = tag; all crates of the workspace carry the same version.
 
 ### Deutsch
 
+- **Pins angehoben (rev auf main-SHAs).** fs-types und fs-conformance rev `722d3ce0` (0.0.7), fs-interfaces rev `2bb70d82` (0.2.0), fs-objects rev `e38093f1` (0.0.11), fs-components (Paket fs-settings) rev `9ab4ac28`; `.cargo/config.toml` nennt `[registries.freesynergy]`. Kein `non_exhaustive`-Bruch in diesem Repo. fs-rpc, fs-settings-rpc (und fs-trusted-path darueber) jetzt rev `9cbce63c` (0.1.4, war Tag v0.1.0): ein Stand je fs-Crate im Lock, `cargo tree -d` zeigt kein fs-*-Duplikat.
+- **Licence-Gate.** Jede Pfad- und Git-Abhaengigkeit traegt eine `version` (fs-types, fs-conformance 0.0.7; fs-objects 0.0.11; fs-settings 0.1.0; fs-rpc, fs-settings-rpc 0.1.4; fs-settings-server 0.0.1; fs-interfaces 0.2.0), damit findet `cargo deny` keinen Wildcard; `deny.toml` unveraendert.
 - **CI-Pin.** `check.yml` und `windows.yml` rufen fs-release v0.0.18 (`9eed5c95`, war `485f747`): die Lock-Pruefung von `485f747` nannte noch die alte Org als einzige Quelle von `fs-types` und war fuer jedes Repo der Org FreeSynergy-Net rot.
 
 - **Korrektur (erster main-Lauf rot).** `build_service` nimmt `SettingsService::new_os_user_is_person`: fs-settings-rpc v0.0.8 ist standardmaessig geschlossen (jede Verbindung ein Bot, leerer Katalog zeigt einem Bot nichts: `not-declared`); der Transport laesst nur den OS-Nutzer des Dienstes zu, dieser ist die Person. Heute ist keine Verbindung ein Bot: jeder Prozess des OS-Nutzers des Dienstes, auch ein KI-Agent, ist die Person; andere OS-Nutzer koennen nicht verbinden. Unveraendert: ein nicht deklarierter Schluessel wird fuer einen Bot und beim Import weiter abgelehnt. Geschrieben mit Hilfe von Claude (Anthropic).

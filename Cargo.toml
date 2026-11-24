@@ -11,15 +11,15 @@ repository = "https://github.com/FreeSynergy-Net/fs-settings"
 # fs-rpc and fs-components need 1.89.
 rust-version = "1.89"
 
-# One source per library (ADR 0092). All pins are tags of the org FreeSynergy-Net.
+# One source per library (ADR 0092). All pins are revs of the org FreeSynergy-Net; `version` is required by the licence gate (wildcards = deny).
 [workspace.dependencies]
-fs-types = { git = "https://github.com/FreeSynergy-Net/fs-types", tag = "v0.0.6" }
-fs-objects = { git = "https://github.com/FreeSynergy-Net/fs-objects", tag = "v0.0.10", features = ["v5"] }
-fs-settings = { git = "https://github.com/FreeSynergy-Net/fs-components", tag = "v0.0.35" }
-fs-settings-rpc = { git = "https://github.com/FreeSynergy-Net/fs-rpc", tag = "v0.1.0" }
-fs-rpc = { git = "https://github.com/FreeSynergy-Net/fs-rpc", tag = "v0.1.0" }
+fs-types = { git = "https://github.com/FreeSynergy-Net/fs-types", rev = "722d3ce0156711d40cb278f2e835e865d9448290", version = "0.0.7" }
+fs-objects = { git = "https://github.com/FreeSynergy-Net/fs-objects", rev = "e38093f1ec61b7c9faaa6f6046f65addb11dcf46", features = ["v5"], version = "0.0.11" }
+fs-settings = { git = "https://github.com/FreeSynergy-Net/fs-components", rev = "9ab4ac280fb2354d41fdbc15bdbed92664a016de", version = "0.1.0" }
+fs-settings-rpc = { git = "https://github.com/FreeSynergy-Net/fs-rpc", rev = "9cbce63c73045a2ea32b88038fd35732c4762624", version = "0.1.4" }
+fs-rpc = { git = "https://github.com/FreeSynergy-Net/fs-rpc", rev = "9cbce63c73045a2ea32b88038fd35732c4762624", version = "0.1.4" }
 # Same source as the `conformance` feature of fs-settings (B1) pins; the pins must stay equal (one source per library, ADR 0092).
-fs-conformance = { git = "https://github.com/FreeSynergy-Net/fs-types", tag = "v0.0.6" }
+fs-conformance = { git = "https://github.com/FreeSynergy-Net/fs-types", rev = "722d3ce0156711d40cb278f2e835e865d9448290", version = "0.0.7" }
 capnp = "0.27"
 tokio = { version = "1", features = ["rt", "macros", "time"] }
 serde = { version = "1", features = ["derive"] }

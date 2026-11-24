@@ -583,8 +583,8 @@ checksum = "1c66915cc5391097de7a2b0b972e8505aa33c0df401fd3a6811dbdb32881ba48"
 
 [[package]]
 name = "fs-conformance"
-version = "0.0.5"
-source = "git+https://github.com/FreeSynergy-Net/fs-types?tag=v0.0.6#2f45110417cf42311d5dee72287b7644312d4bc4"
+version = "0.0.7"
+source = "git+https://github.com/FreeSynergy-Net/fs-types?rev=722d3ce0156711d40cb278f2e835e865d9448290#722d3ce0156711d40cb278f2e835e865d9448290"
 dependencies = [
  "async-trait",
  "fs-types",
@@ -592,8 +592,8 @@ dependencies = [
 
 [[package]]
 name = "fs-interfaces"
-version = "0.0.35"
-source = "git+https://github.com/FreeSynergy-Net/fs-interfaces?tag=v0.0.35#4e2624e20f0b5ab4e6620e4c3c85f9d2f5b9240a"
+version = "0.2.0"
+source = "git+https://github.com/FreeSynergy-Net/fs-interfaces?rev=2bb70d826681403894ec6d65a7fad9d3a3f51ac2#2bb70d826681403894ec6d65a7fad9d3a3f51ac2"
 dependencies = [
  "capnp",
  "fs-types",
@@ -602,8 +602,8 @@ dependencies = [
 
 [[package]]
 name = "fs-objects"
-version = "0.0.10"
-source = "git+https://github.com/FreeSynergy-Net/fs-objects?tag=v0.0.10#18f68042df4a90ef5f04e0744d6f010c0af214c5"
+version = "0.0.11"
+source = "git+https://github.com/FreeSynergy-Net/fs-objects?rev=e38093f1ec61b7c9faaa6f6046f65addb11dcf46#e38093f1ec61b7c9faaa6f6046f65addb11dcf46"
 dependencies = [
  "async-trait",
  "base64",
@@ -623,8 +623,8 @@ dependencies = [
 
 [[package]]
 name = "fs-rpc"
-version = "0.1.0"
-source = "git+https://github.com/FreeSynergy-Net/fs-rpc?tag=v0.1.0#a0123782090dc7e74f20fba164ee10d009f3f985"
+version = "0.1.4"
+source = "git+https://github.com/FreeSynergy-Net/fs-rpc?rev=9cbce63c73045a2ea32b88038fd35732c4762624#9cbce63c73045a2ea32b88038fd35732c4762624"
 dependencies = [
  "capnp",
  "capnp-rpc",
@@ -643,12 +643,14 @@ dependencies = [
 
 [[package]]
 name = "fs-settings"
-version = "0.0.35"
-source = "git+https://github.com/FreeSynergy-Net/fs-components?tag=v0.0.35#0becc479920d1bd512b30800cb0772db1130c27d"
+version = "0.1.0"
+source = "git+https://github.com/FreeSynergy-Net/fs-components?rev=9ab4ac280fb2354d41fdbc15bdbed92664a016de#9ab4ac280fb2354d41fdbc15bdbed92664a016de"
 dependencies = [
  "async-trait",
  "fs-conformance",
  "fs-types",
+ "serde",
+ "serde_json",
 ]
 
 [[package]]
@@ -668,8 +670,8 @@ dependencies = [
 
 [[package]]
 name = "fs-settings-rpc"
-version = "0.1.0"
-source = "git+https://github.com/FreeSynergy-Net/fs-rpc?tag=v0.1.0#a0123782090dc7e74f20fba164ee10d009f3f985"
+version = "0.1.4"
+source = "git+https://github.com/FreeSynergy-Net/fs-rpc?rev=9cbce63c73045a2ea32b88038fd35732c4762624#9cbce63c73045a2ea32b88038fd35732c4762624"
 dependencies = [
  "capnp",
  "capnp-rpc",
@@ -706,16 +708,16 @@ dependencies = [
 
 [[package]]
 name = "fs-trusted-path"
-version = "0.1.0"
-source = "git+https://github.com/FreeSynergy-Net/fs-rpc?tag=v0.1.0#a0123782090dc7e74f20fba164ee10d009f3f985"
+version = "0.1.4"
+source = "git+https://github.com/FreeSynergy-Net/fs-rpc?rev=9cbce63c73045a2ea32b88038fd35732c4762624#9cbce63c73045a2ea32b88038fd35732c4762624"
 dependencies = [
  "windows-sys 0.61.2",
 ]
 
 [[package]]
 name = "fs-types"
-version = "0.0.5"
-source = "git+https://github.com/FreeSynergy-Net/fs-types?tag=v0.0.6#2f45110417cf42311d5dee72287b7644312d4bc4"
+version = "0.0.7"
+source = "git+https://github.com/FreeSynergy-Net/fs-types?rev=722d3ce0156711d40cb278f2e835e865d9448290#722d3ce0156711d40cb278f2e835e865d9448290"
 dependencies = [
  "capnp",
  "chrono",
@@ -724,6 +726,7 @@ dependencies = [
  "iri-string",
  "oxilangtag",
  "semver",
+ "strum 0.28.0",
  "unicode-normalization",
  "zeroize",
 ]
@@ -2081,7 +2084,16 @@ version = "0.26.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8fec0f0aef304996cf250b31b5a10dee7980c85da9d759361292b8bca5a18f06"
 dependencies = [
- "strum_macros",
+ "strum_macros 0.26.4",
+]
+
+[[package]]
+name = "strum"
+version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9628de9b8791db39ceda2b119bbe13134770b56c138ec1d3af810d045c04f9bd"
+dependencies = [
+ "strum_macros 0.28.0",
 ]
 
 [[package]]
@@ -2094,6 +2106,18 @@ dependencies = [
  "proc-macro2",
  "quote",
  "rustversion",
+ "syn 2.0.119",
+]
+
+[[package]]
+name = "strum_macros"
+version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ab85eea0270ee17587ed4156089e10b9e6880ee688791d45a905f5b1ca36f664"
+dependencies = [
+ "heck",
+ "proc-macro2",
+ "quote",
  "syn 2.0.119",
 ]
 
@@ -2466,8 +2490,8 @@ dependencies = [
  "simdutf8",
  "simsimd",
  "smallvec",
- "strum",
- "strum_macros",
+ "strum 0.26.3",
+ "strum_macros 0.26.4",
  "tempfile",
  "thiserror",
  "tracing",
@@ -2512,8 +2536,8 @@ dependencies = [
  "bitflags",
  "memchr",
  "miette",
- "strum",
- "strum_macros",
+ "strum 0.26.3",
+ "strum_macros 0.26.4",
  "thiserror",
  "turso_macros",
 ]
