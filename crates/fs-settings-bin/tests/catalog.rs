@@ -32,7 +32,7 @@ fn commands_are_bare_keys_of_the_module_without_id() {
     assert_eq!(doc["contract"], "settings");
     assert_eq!(doc["scope"], "own-contract");
     let list = doc["commands"].as_array().expect("commands");
-    assert!(!list.is_empty());
+    assert_ne!(list.len(), 0);
     for c in list {
         let key = c["capability"].as_str().expect("capability");
         assert!(key.starts_with("settings."), "{key}");
