@@ -602,8 +602,8 @@ dependencies = [
 
 [[package]]
 name = "fs-interfaces"
-version = "0.0.34"
-source = "git+https://github.com/FreeSynergy-Net/fs-interfaces?rev=aa1a58b5ed09359bae5035d451461e5ed889b1f1#aa1a58b5ed09359bae5035d451461e5ed889b1f1"
+version = "0.0.35"
+source = "git+https://github.com/FreeSynergy-Net/fs-interfaces?tag=v0.0.35#4e2624e20f0b5ab4e6620e4c3c85f9d2f5b9240a"
 dependencies = [
  "capnp",
  "fs-types",
@@ -639,7 +639,7 @@ dependencies = [
  "capnp",
  "capnp-rpc",
  "chrono",
- "fs-interfaces 0.0.34 (git+https://github.com/FreeSynergy-Net/fs-interfaces?tag=v0.0.34)",
+ "fs-interfaces 0.0.34",
  "fs-objects",
  "fs-trusted-path",
  "fs-types",
@@ -665,7 +665,7 @@ dependencies = [
 name = "fs-settings-bin"
 version = "0.0.1"
 dependencies = [
- "fs-interfaces 0.0.34 (git+https://github.com/FreeSynergy-Net/fs-interfaces?rev=aa1a58b5ed09359bae5035d451461e5ed889b1f1)",
+ "fs-interfaces 0.0.35",
  "fs-rpc",
  "fs-settings",
  "fs-settings-rpc",
@@ -683,7 +683,7 @@ source = "git+https://github.com/FreeSynergy-Net/fs-rpc?tag=v0.0.8#36390975a085f
 dependencies = [
  "capnp",
  "capnp-rpc",
- "fs-interfaces 0.0.34 (git+https://github.com/FreeSynergy-Net/fs-interfaces?tag=v0.0.34)",
+ "fs-interfaces 0.0.34",
  "fs-rpc",
  "fs-settings",
  "fs-types",

@@ -18,8 +18,8 @@
       "locked": "locked",
       "lock-reason": "lock-reason",
       "order": "order",
-      "change": "settings.set",
-      "reset": "settings.reset"
+      "change": "value.set",
+      "reset": "value.reset"
     },
     "fields": {
       "label": "text",

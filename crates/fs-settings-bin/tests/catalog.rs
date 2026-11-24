@@ -5,7 +5,7 @@
 use std::collections::BTreeSet;
 use std::path::PathBuf;
 
-use fs_interfaces_main::forms;
+use fs_interfaces::forms;
 use serde_json::Value;
 
 fn read(file: &str) -> Value {
@@ -35,7 +35,7 @@ fn commands_are_bare_keys_of_the_module_without_id() {
     assert_ne!(list.len(), 0);
     for c in list {
         let key = c["capability"].as_str().expect("capability");
-        assert!(key.starts_with("settings."), "{key}");
+        assert!(key.starts_with("value."), "{key}");
         assert!(c.get("id").is_none(), "{key}: the host derives the id");
         assert!(["read", "write", "delete"].contains(&c["access"].as_str().expect("access")));
         let help = &c["help"];
