@@ -119,7 +119,9 @@ pub fn build_service(
     instance: Option<Arc<DbSettingsStore>>,
     log: LogSink,
 ) -> SettingsService<DbSettingsStore, DbSettingsStore> {
-    let mut service = SettingsService::new(person, instance);
+    // fs-settings-rpc v0.0.8 fails closed (every connection a bot, an empty catalog shows a bot nothing). The transport admits the OS user of
+    // this service only, so that user is the person (ADR 0054 open point 1); the host says so on purpose.
+    let mut service = SettingsService::new_os_user_is_person(person, instance);
     let claims = Arc::clone(&log);
     service.claimed_by = Some(Arc::new(move |by: &str| {
         claims(&fs_settings_rpc::claim_line(by));
