@@ -182,7 +182,7 @@ pub fn serve(args: &[String]) -> Result<(), ServeError> {
         keep_heartbeat(&beat_socket)?;
         // `Guarded::new` runs inside the `LocalSet` of the loop.
         Ok(SettingsWithForm::new(service, core, person, &|line| {
-            eprintln!("{line}")
+            eprintln!("{line}");
         }))
     })
     .map_err(|e| ServeError::Failed(format!("serve-failed cause={e}")))

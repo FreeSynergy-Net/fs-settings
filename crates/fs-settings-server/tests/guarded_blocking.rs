@@ -124,9 +124,9 @@ fn a_set_over_the_form_source_does_not_stop_the_loop() {
 /// The product path without a place for the module person (`person_owner(None)`) says `owner-unreachable`, not a panic or a guess.
 #[test]
 fn without_a_place_for_the_module_person_the_owner_is_unreachable() {
-    let problem = local_person(&*person_owner(None))
-        .err()
-        .expect("no place: no person");
+    let Err(problem) = local_person(&*person_owner(None)) else {
+        panic!("no place: no person");
+    };
     assert!(
         matches!(problem, OwnerProblem::Unreachable { .. }),
         "{problem:?}"
