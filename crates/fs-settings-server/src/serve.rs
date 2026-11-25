@@ -12,9 +12,10 @@ use fs_settings_rpc::SettingsService;
 
 use crate::clock::system_clock;
 use crate::db_store::DbSettingsStore;
+use crate::guarded::{SettingsWithForm, local_person, person_owner};
 use crate::instance_source::NoInstance;
 use crate::legacy::{LegacyEnv, LegacyLine, import_legacy};
-use crate::ports::{Coded, Health, SettingCode, SettingsStore};
+use crate::ports::{Coded, Health, ProgramName, SettingCode, SettingsStore};
 use crate::reply::code_line;
 use crate::words::{Args, ServeWords, serve_words};
 
@@ -167,13 +168,24 @@ pub fn serve(args: &[String]) -> Result<(), ServeError> {
         words.instance.then(|| Arc::clone(&shared)),
         stderr_log(),
     );
+    // The person "me" of the module person, read once and BEFORE the loop (it may start that service); without it only the form source stays off.
+    let person = local_person(&*person_owner(std::env::current_exe().ok().as_deref()));
+    let program = ProgramName::new(PROGRAM)
+        .map_err(|_| ServeError::Failed("serve-failed cause=program-name".into()))?;
     let identity = ServerIdentity::new(PROGRAM, env!("CARGO_PKG_VERSION"));
     let beat_socket = socket.clone();
     run_until_signal_callers(&socket, identity, move || async move {
         // The heartbeat of the host (`ping`/`save` on `<socket>.beat`), started after the socket is bound and ticked by the loop of
         // THIS runtime: a loop that stands still stops ticking, so the host sees a hang and not a false "alive".
         keep_heartbeat(&beat_socket)?;
-        Ok(service.callers())
+        // `Guarded::new` runs inside the `LocalSet` of the loop.
+        Ok(SettingsWithForm::new(
+            service,
+            shared,
+            program,
+            person,
+            &|line| eprintln!("{line}"),
+        ))
     })
     .map_err(|e| ServeError::Failed(format!("serve-failed cause={e}")))
 }

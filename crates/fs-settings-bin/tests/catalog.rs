@@ -87,3 +87,14 @@ fn the_form_maps_every_required_channel_and_only_channels_it_has() {
         "every channel of the form is mapped"
     );
 }
+
+/// The form source needs the person "me" of the module person (the owner of `LocalPerson`): the catalog says so, so the host and the catalog
+/// know what is missing when the module person is absent (same line as `fs-modules-planning`).
+#[test]
+fn the_catalog_requires_the_module_person() {
+    let doc = read("commands.json");
+    let requires = doc["requires"].as_array().expect("requires");
+    assert_eq!(requires.len(), 1);
+    assert_eq!(requires[0]["module"], "person");
+    assert_eq!(requires[0]["required"], true);
+}

@@ -15,11 +15,15 @@ rust-version = "1.89"
 [workspace.dependencies]
 fs-types = { git = "https://github.com/FreeSynergy-Net/fs-types", rev = "722d3ce0156711d40cb278f2e835e865d9448290", version = "0.0.7" }
 fs-objects = { git = "https://github.com/FreeSynergy-Net/fs-objects", rev = "e38093f1ec61b7c9faaa6f6046f65addb11dcf46", features = ["v5"], version = "0.0.11" }
-fs-settings = { git = "https://github.com/FreeSynergy-Net/fs-components", rev = "81367489094efee62ec16194be67df4a588045a0", version = "0.1.0" }
-fs-settings-rpc = { git = "https://github.com/FreeSynergy-Net/fs-rpc", rev = "e3871c3b2438fae23fdc1eb6c72dd7c125f21abd", version = "0.1.4" }
-fs-rpc = { git = "https://github.com/FreeSynergy-Net/fs-rpc", rev = "e3871c3b2438fae23fdc1eb6c72dd7c125f21abd", version = "0.1.4" }
+fs-settings = { git = "https://github.com/FreeSynergy-Net/fs-components", rev = "508a25f3915270e28ea6a306411fa336e563d9e1", version = "0.1.0" }
+fs-settings-rpc = { git = "https://github.com/FreeSynergy-Net/fs-rpc", rev = "459c1e8d1226896cca53c3140f5aa912f43a5305", version = "0.1.4" }
+fs-rpc = { git = "https://github.com/FreeSynergy-Net/fs-rpc", rev = "459c1e8d1226896cca53c3140f5aa912f43a5305", version = "0.1.4" }
 # Same source as the `conformance` feature of fs-settings (B1) pins; the pins must stay equal (one source per library, ADR 0092).
 fs-conformance = { git = "https://github.com/FreeSynergy-Net/fs-types", rev = "722d3ce0156711d40cb278f2e835e865d9448290", version = "0.0.7" }
+# The owner ("me") of the module person and the contract types of the form source: one source per library, the stand fs-rpc pins.
+fs-interfaces = { git = "https://github.com/FreeSynergy-Net/fs-interfaces", rev = "76df54074910e827ad556ff613335ada49c86de3", version = "0.3.0" }
+fs-module = { git = "https://github.com/FreeSynergy-Net/fs-interfaces", rev = "76df54074910e827ad556ff613335ada49c86de3", version = "0.3.0" }
+fs-person-service = { git = "https://github.com/FreeSynergy-Net/fs-modules-person", rev = "58e0eff58c0c2438ea2fa55a33364924f670fb6f", version = "0.0.1", features = ["client"] }
 capnp = "0.27"
 tokio = { version = "1", features = ["rt", "macros", "time"] }
 serde = { version = "1", features = ["derive"] }

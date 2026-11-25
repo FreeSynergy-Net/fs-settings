@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "contract": "settings",
   "scope": "own-contract",
+  "requires": [ { "module": "person", "required": true } ],
   "commands": [
     {
       "capability": "value.get", "call": "Store.profile", "access": "read",

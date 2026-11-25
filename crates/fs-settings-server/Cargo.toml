@@ -18,6 +18,8 @@ fs-objects.workspace = true
 fs-settings.workspace = true
 fs-settings-rpc.workspace = true
 fs-rpc.workspace = true
+fs-interfaces.workspace = true
+fs-person-service.workspace = true
 capnp.workspace = true
 tokio.workspace = true
 serde.workspace = true
@@ -37,3 +39,6 @@ windows-sys = { version = "0.59", features = ["Win32_Foundation", "Win32_Securit
 tempfile.workspace = true
 tokio = { workspace = true, features = ["rt", "macros", "time"] }
 futures = "0.3"
+# The suite of the contract `module_v1` and the sample persons: the SAME source as fs-interfaces above (one fs-* stand in the lock).
+fs-module.workspace = true
+fs-interfaces = { workspace = true, features = ["fake"] }
