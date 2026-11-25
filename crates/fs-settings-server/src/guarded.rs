@@ -19,13 +19,12 @@ use fs_rpc::{
 use fs_settings_rpc::{SettingsCallers, SettingsCore, SettingsService};
 
 use crate::db_store::DbSettingsStore;
-use crate::off_runtime::OffRuntime;
 use crate::ports::ProgramName;
 
 /// The hub per connection, and - when the owner is known - `FormSource` next to it on the same capability.
 pub struct SettingsWithForm {
     hub: SettingsCallers<DbSettingsStore, DbSettingsStore>,
-    form: Option<Guarded<SettingsCore<OffRuntime<DbSettingsStore>>>>,
+    form: Option<Guarded<SettingsCore<DbSettingsStore>>>,
 }
 
 impl SettingsWithForm {
@@ -43,11 +42,16 @@ impl SettingsWithForm {
     ) -> Self {
         let form = match person {
             Ok(person) => {
-                // The core calls the port inside async methods; the database store must not be called on a runtime thread (`OffRuntime`).
+                // An empty catalog is no failure, but the form source then shows nothing and refuses every `key`: say it once.
+                if service.catalog.iter().next().is_none() {
+                    report(
+                        "fs-settings: the catalog is empty (no program declares settings yet); the form source shows no setting",
+                    );
+                }
                 let core = SettingsCore::new(
                     program,
                     service.catalog.clone(),
-                    Arc::new(OffRuntime(store)),
+                    store,
                 );
                 Some(Guarded::new(core, Ports::new(OsUserIsPerson, person)))
             }

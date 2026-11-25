@@ -716,7 +716,7 @@ dependencies = [
 [[package]]
 name = "fs-person"
 version = "0.0.1"
-source = "git+https://github.com/FreeSynergy-Net/fs-modules-person?rev=58e0eff58c0c2438ea2fa55a33364924f670fb6f#58e0eff58c0c2438ea2fa55a33364924f670fb6f"
+source = "git+https://github.com/FreeSynergy-Net/fs-modules-person?rev=3ad143ce2bae6abea4fbe40bf4ce5b0ada6ba95d#3ad143ce2bae6abea4fbe40bf4ce5b0ada6ba95d"
 dependencies = [
  "async-trait",
  "fs-interfaces",
@@ -729,7 +729,7 @@ dependencies = [
 [[package]]
 name = "fs-person-service"
 version = "0.0.1"
-source = "git+https://github.com/FreeSynergy-Net/fs-modules-person?rev=58e0eff58c0c2438ea2fa55a33364924f670fb6f#58e0eff58c0c2438ea2fa55a33364924f670fb6f"
+source = "git+https://github.com/FreeSynergy-Net/fs-modules-person?rev=3ad143ce2bae6abea4fbe40bf4ce5b0ada6ba95d#3ad143ce2bae6abea4fbe40bf4ce5b0ada6ba95d"
 dependencies = [
  "capnp",
  "capnp-rpc",
@@ -745,7 +745,7 @@ dependencies = [
 [[package]]
 name = "fs-rpc"
 version = "0.1.4"
-source = "git+https://github.com/FreeSynergy-Net/fs-rpc?rev=459c1e8d1226896cca53c3140f5aa912f43a5305#459c1e8d1226896cca53c3140f5aa912f43a5305"
+source = "git+https://github.com/FreeSynergy-Net/fs-rpc?rev=aa59c6bd6b9d2efa7f49e349ad44ef51bcb687d3#aa59c6bd6b9d2efa7f49e349ad44ef51bcb687d3"
 dependencies = [
  "capnp",
  "capnp-rpc",
@@ -792,7 +792,7 @@ dependencies = [
 [[package]]
 name = "fs-settings-rpc"
 version = "0.1.4"
-source = "git+https://github.com/FreeSynergy-Net/fs-rpc?rev=459c1e8d1226896cca53c3140f5aa912f43a5305#459c1e8d1226896cca53c3140f5aa912f43a5305"
+source = "git+https://github.com/FreeSynergy-Net/fs-rpc?rev=aa59c6bd6b9d2efa7f49e349ad44ef51bcb687d3#aa59c6bd6b9d2efa7f49e349ad44ef51bcb687d3"
 dependencies = [
  "capnp",
  "capnp-rpc",
@@ -833,7 +833,7 @@ dependencies = [
 [[package]]
 name = "fs-trusted-path"
 version = "0.1.4"
-source = "git+https://github.com/FreeSynergy-Net/fs-rpc?rev=459c1e8d1226896cca53c3140f5aa912f43a5305#459c1e8d1226896cca53c3140f5aa912f43a5305"
+source = "git+https://github.com/FreeSynergy-Net/fs-rpc?rev=aa59c6bd6b9d2efa7f49e349ad44ef51bcb687d3#aa59c6bd6b9d2efa7f49e349ad44ef51bcb687d3"
 dependencies = [
  "windows-sys 0.61.2",
 ]

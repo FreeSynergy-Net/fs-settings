@@ -22,7 +22,7 @@ use fs_interfaces::settings_capnp::settings_hub;
 use fs_rpc::{Caller, FixedPerson, Guarded, OsUserIsPerson, PerConnection, Ports};
 use fs_settings::{Place, Scope, SettingsStore};
 use fs_settings_rpc::SettingsCore;
-use fs_settings_server::{DbSettingsStore, OffRuntime, SettingsWithForm};
+use fs_settings_server::{DbSettingsStore, SettingsWithForm};
 use guarded_support::{
     AI, BOT_ID, PERSON_ID, WEEK, catalog, connect, ids, invoke, key, program, run, service,
     the_person, with_form,
@@ -34,8 +34,8 @@ fn store(dir: &std::path::Path) -> Arc<DbSettingsStore> {
 
 fn stored(store: &Arc<DbSettingsStore>, name: &str) -> bool {
     let scope = Scope::Program(program());
-    // the database store must not be called on a runtime thread
-    OffRuntime(store.clone())
+    // Called OUTSIDE the runtime (the database store is sync over a runtime of its own): after `run` has returned.
+    store
         .profile(&scope, Place::Profile, 0)
         .values
         .contains_key(&key(name))
@@ -96,8 +96,8 @@ impl<M: ModuleCore> ModuleCore for Lax<M> {
 }
 
 /// The wrapper with the SAME ports as the program, over a core with the rules of `rules` (the real ones: `SettingsCore`; the wrong ones: `Lax`).
-fn lax(store: &Arc<DbSettingsStore>) -> Guarded<Lax<SettingsCore<OffRuntime<DbSettingsStore>>>> {
-    let core = SettingsCore::new(program(), catalog(), Arc::new(OffRuntime(store.clone())));
+fn lax(store: &Arc<DbSettingsStore>) -> Guarded<Lax<SettingsCore<DbSettingsStore>>> {
+    let core = SettingsCore::new(program(), catalog(), store.clone());
     let core = Lax {
         inner: core,
         rules: AllowAll,
@@ -148,16 +148,19 @@ fn a_bot_cannot_set_a_human_only_setting() {
         let bot = connect(&mut s, BOT_ID);
         let refused = invoke(&bot, "value.set", AI, &[("value", "true")]).await;
         assert_eq!((refused.failed, refused.status), (true, 403), "{refused:?}");
-        assert!(!stored(&store, AI), "the store did not change");
-        // a person sets it, the same call
+    });
+    assert!(!stored(&store, AI), "the store did not change");
+    // a person sets it, the same call
+    run(async {
+        let mut s = with_form(&store);
         let person = connect(&mut s, PERSON_ID);
         assert!(
             !invoke(&person, "value.set", AI, &[("value", "true")])
                 .await
                 .failed
         );
-        assert!(stored(&store, AI));
     });
+    assert!(stored(&store, AI));
 }
 
 /// The counter-proof: with rules "everything is allowed" the bot sees it AND sets it (both facts of the two tests above turn around).
@@ -178,8 +181,8 @@ fn counter_rules_that_allow_everything_let_the_bot_in() {
         );
         let done = invoke(&bot, "value.set", AI, &[("value", "true")]).await;
         assert!(!done.failed, "{done:?}");
-        assert!(stored(&store, AI), "with AllowAll the bot sets it");
     });
+    assert!(stored(&store, AI), "with AllowAll the bot sets it");
 }
 
 /// The hub of the contract `settings` answers on the same capability, as before.
