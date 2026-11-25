@@ -1,6 +1,6 @@
 # cargo-nextest profiles for fs-settings (workflow testlauf, CLAUDE.md §4: little but often). Vorlage fs-components 216594c0.
 # Geprüft mit `cargo nextest list` (C4 Batch 2). Muster: fs-rpc .config/nextest.toml. Zuordnung nach Binary-Namen.
-# Stufen: quick (Unit/Modell, ohne security) | security (Rechte, Akteur, OS-Nutzer) | release (nur CI, alles).
+# Stufen: quick (Unit/Modell, ohne security) | security (Rechte, Akteur, OS-Nutzer, claims, serve_service; additiv: quick bleibt unverändert) | release (nur CI, alles).
 
 [profile.default]
 fail-fast = false
@@ -12,7 +12,7 @@ retries = 0
 slow-timeout = { period = "30s", terminate-after = 4 }
 
 [profile.security]
-default-filter = "binary(/actor|os_user/) | test(/restricted|security/)"
+default-filter = "binary(/actor|os_user|claims|serve_service/) | test(/restricted|security/)"
 fail-fast = false
 retries = 0
 slow-timeout = { period = "60s", terminate-after = 5 }
