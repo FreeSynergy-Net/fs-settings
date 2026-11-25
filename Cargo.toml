@@ -15,15 +15,15 @@ rust-version = "1.89"
 [workspace.dependencies]
 fs-types = { git = "https://github.com/FreeSynergy-Net/fs-types", rev = "722d3ce0156711d40cb278f2e835e865d9448290", version = "0.0.7" }
 fs-objects = { git = "https://github.com/FreeSynergy-Net/fs-objects", rev = "e38093f1ec61b7c9faaa6f6046f65addb11dcf46", features = ["v5"], version = "0.0.11" }
-fs-settings = { git = "https://github.com/FreeSynergy-Net/fs-components", rev = "508a25f3915270e28ea6a306411fa336e563d9e1", version = "0.1.0" }
-fs-settings-rpc = { git = "https://github.com/FreeSynergy-Net/fs-rpc", rev = "aa59c6bd6b9d2efa7f49e349ad44ef51bcb687d3", version = "0.1.4" }
-fs-rpc = { git = "https://github.com/FreeSynergy-Net/fs-rpc", rev = "aa59c6bd6b9d2efa7f49e349ad44ef51bcb687d3", version = "0.1.4" }
+fs-settings = { git = "https://github.com/FreeSynergy-Net/fs-components", rev = "33550c616f739cc50ba8483c3e5fb07df3091407", version = "0.1.0" }
+fs-settings-rpc = { git = "https://github.com/FreeSynergy-Net/fs-rpc", rev = "cde5b025b3980f7dcc1d5d678ad5aea981015f8a", version = "0.1.4" }
+fs-rpc = { git = "https://github.com/FreeSynergy-Net/fs-rpc", rev = "cde5b025b3980f7dcc1d5d678ad5aea981015f8a", version = "0.1.4" }
 # Same source as the `conformance` feature of fs-settings (B1) pins; the pins must stay equal (one source per library, ADR 0092).
 fs-conformance = { git = "https://github.com/FreeSynergy-Net/fs-types", rev = "722d3ce0156711d40cb278f2e835e865d9448290", version = "0.0.7" }
 # The owner ("me") of the module person and the contract types of the form source: one source per library, the stand fs-rpc pins.
-fs-interfaces = { git = "https://github.com/FreeSynergy-Net/fs-interfaces", rev = "76df54074910e827ad556ff613335ada49c86de3", version = "0.3.0" }
-fs-module = { git = "https://github.com/FreeSynergy-Net/fs-interfaces", rev = "76df54074910e827ad556ff613335ada49c86de3", version = "0.3.0" }
-fs-person-service = { git = "https://github.com/FreeSynergy-Net/fs-modules-person", rev = "3ad143ce2bae6abea4fbe40bf4ce5b0ada6ba95d", version = "0.0.1", features = ["client"] }
+fs-interfaces = { git = "https://github.com/FreeSynergy-Net/fs-interfaces", rev = "71809eaa1e974841762315c7b3187276469ec0bb", version = "0.3.0" }
+fs-module = { git = "https://github.com/FreeSynergy-Net/fs-interfaces", rev = "71809eaa1e974841762315c7b3187276469ec0bb", version = "0.3.0" }
+fs-person-service = { git = "https://github.com/FreeSynergy-Net/fs-modules-person", rev = "904282c861ad815ba8de736f7e057827f2b81113", version = "0.0.1", features = ["client"] }
 capnp = "0.27"
 tokio = { version = "1", features = ["rt", "macros", "time"] }
 serde = { version = "1", features = ["derive"] }
