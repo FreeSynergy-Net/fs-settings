@@ -6,6 +6,7 @@ Version = tag; all crates of the workspace carry the same version.
 
 ### English
 
+- **Pin.** fs-components (package fs-settings) rev `77b23ea3` (was `233c9208`), fs-rpc and fs-settings-rpc rev `0f639470` (was `9aff426a`), fs-interfaces rev `ad56e2f4` (was `a395979b`, the stand fs-rpc `0f639470` uses: one fs-interfaces in the graph). Written with the help of Claude (Anthropic).
 - **Pin.** fs-components (package fs-settings) rev `233c9208` (was `2ffa1c4d`), fs-rpc and fs-settings-rpc rev `9aff426a` (was `9585ed18`), fs-interfaces rev `a395979b` (was `83b96e30`, the stand fs-rpc `9aff426a` uses: one fs-interfaces in the graph). Written with the help of Claude (Anthropic).
 - **Pin.** fs-components (package fs-settings) rev `2ffa1c4d` (was `4c515bf7`), fs-rpc and fs-settings-rpc rev `9585ed18` (was `82d2ba19`). Written with the help of Claude (Anthropic).
 - **Pin.** fs-components (package fs-settings) rev `4c515bf7` (was `06a77a6a`), fs-rpc and fs-settings-rpc rev `82d2ba19` (was `56f5cc39`). Written with the help of Claude (Anthropic).
@@ -27,6 +28,7 @@ Version = tag; all crates of the workspace carry the same version.
 
 ### Deutsch
 
+- **Pin.** fs-components (Paket fs-settings) rev `77b23ea3` (war `233c9208`), fs-rpc und fs-settings-rpc rev `0f639470` (war `9aff426a`), fs-interfaces rev `ad56e2f4` (war `a395979b`, der Stand, den fs-rpc `0f639470` nutzt: ein fs-interfaces im Graph). Geschrieben mit Hilfe von Claude (Anthropic).
 - **Pin.** fs-components (Paket fs-settings) rev `233c9208` (war `2ffa1c4d`), fs-rpc und fs-settings-rpc rev `9aff426a` (war `9585ed18`), fs-interfaces rev `a395979b` (war `83b96e30`, der Stand, den fs-rpc `9aff426a` nutzt: ein fs-interfaces im Graph). Geschrieben mit Hilfe von Claude (Anthropic).
 - **Pin.** fs-components (Paket fs-settings) rev `2ffa1c4d` (war `4c515bf7`), fs-rpc und fs-settings-rpc rev `9585ed18` (war `82d2ba19`). Geschrieben mit Hilfe von Claude (Anthropic).
 - **Pin.** fs-components (Paket fs-settings) rev `4c515bf7` (war `06a77a6a`), fs-rpc und fs-settings-rpc rev `82d2ba19` (war `56f5cc39`). Geschrieben mit Hilfe von Claude (Anthropic).
