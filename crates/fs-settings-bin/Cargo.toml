@@ -21,7 +21,7 @@ path = "src/service.rs"
 fs-settings-server = { path = "../fs-settings-server", version = "0.0.1" }
 
 [dev-dependencies]
-fs-interfaces = { git = "https://github.com/FreeSynergy-Net/fs-interfaces", rev = "83b96e30ae3f8a04a222fa5a34dc4ad29306cdf2", version = "0.2.0" }
+fs-interfaces = { git = "https://github.com/FreeSynergy-Net/fs-interfaces", rev = "e8699fb4c8d1e1f766799f57ae43d246bb6e9858", version = "0.2.0" }
 serde_json.workspace = true
 tempfile.workspace = true
 fs-settings.workspace = true

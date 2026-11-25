@@ -6,6 +6,7 @@ Version = tag; all crates of the workspace carry the same version.
 
 ### English
 
+- **Pin.** fs-components (package fs-settings) rev `233c9208` (was `2ffa1c4d`), fs-rpc and fs-settings-rpc rev `1de6cf2a` (was `9585ed18`), fs-interfaces rev `e8699fb4` (was `83b96e30`, the stand fs-rpc `1de6cf2a` uses: one fs-interfaces in the graph). Written with the help of Claude (Anthropic).
 - **Pin.** fs-components (package fs-settings) rev `2ffa1c4d` (was `4c515bf7`), fs-rpc and fs-settings-rpc rev `9585ed18` (was `82d2ba19`). Written with the help of Claude (Anthropic).
 - **Pin.** fs-components (package fs-settings) rev `4c515bf7` (was `06a77a6a`), fs-rpc and fs-settings-rpc rev `82d2ba19` (was `56f5cc39`). Written with the help of Claude (Anthropic).
 - **Pins lifted (rev on main SHAs).** fs-types and fs-conformance rev `722d3ce0` (0.0.7), fs-interfaces rev `2bb70d82` (0.2.0), fs-objects rev `e38093f1` (0.0.11), fs-components (package fs-settings) rev `9ab4ac28`; `.cargo/config.toml` names `[registries.freesynergy]`. No `non_exhaustive` break in this repo. fs-rpc, fs-settings-rpc (and fs-trusted-path through them) now rev `9cbce63c` (0.1.4, was tag v0.1.0): one stand per fs crate in the lock, `cargo tree -d` shows no fs-* duplicate.
@@ -26,6 +27,7 @@ Version = tag; all crates of the workspace carry the same version.
 
 ### Deutsch
 
+- **Pin.** fs-components (Paket fs-settings) rev `233c9208` (war `2ffa1c4d`), fs-rpc und fs-settings-rpc rev `1de6cf2a` (war `9585ed18`), fs-interfaces rev `e8699fb4` (war `83b96e30`, der Stand, den fs-rpc `1de6cf2a` nutzt: ein fs-interfaces im Graph). Geschrieben mit Hilfe von Claude (Anthropic).
 - **Pin.** fs-components (Paket fs-settings) rev `2ffa1c4d` (war `4c515bf7`), fs-rpc und fs-settings-rpc rev `9585ed18` (war `82d2ba19`). Geschrieben mit Hilfe von Claude (Anthropic).
 - **Pin.** fs-components (Paket fs-settings) rev `4c515bf7` (war `06a77a6a`), fs-rpc und fs-settings-rpc rev `82d2ba19` (war `56f5cc39`). Geschrieben mit Hilfe von Claude (Anthropic).
 - **Pins angehoben (rev auf main-SHAs).** fs-types und fs-conformance rev `722d3ce0` (0.0.7), fs-interfaces rev `2bb70d82` (0.2.0), fs-objects rev `e38093f1` (0.0.11), fs-components (Paket fs-settings) rev `9ab4ac28`; `.cargo/config.toml` nennt `[registries.freesynergy]`. Kein `non_exhaustive`-Bruch in diesem Repo. fs-rpc, fs-settings-rpc (und fs-trusted-path darueber) jetzt rev `9cbce63c` (0.1.4, war Tag v0.1.0): ein Stand je fs-Crate im Lock, `cargo tree -d` zeigt kein fs-*-Duplikat.
