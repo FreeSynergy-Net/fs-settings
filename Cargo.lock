@@ -592,8 +592,8 @@ dependencies = [
 
 [[package]]
 name = "fs-interfaces"
-version = "0.2.0"
-source = "git+https://github.com/FreeSynergy-Net/fs-interfaces?rev=ad56e2f4b953ebf51d41bb7aec8202dfafebdfac#ad56e2f4b953ebf51d41bb7aec8202dfafebdfac"
+version = "0.3.0"
+source = "git+https://github.com/FreeSynergy-Net/fs-interfaces?rev=6b02b138b3e55c290d6cbd957976013cc49dca5d#6b02b138b3e55c290d6cbd957976013cc49dca5d"
 dependencies = [
  "capnp",
  "fs-types",
@@ -624,7 +624,7 @@ dependencies = [
 [[package]]
 name = "fs-rpc"
 version = "0.1.4"
-source = "git+https://github.com/FreeSynergy-Net/fs-rpc?rev=0f639470a7c1e5bbae5f84fbbbb41bf2504c232a#0f639470a7c1e5bbae5f84fbbbb41bf2504c232a"
+source = "git+https://github.com/FreeSynergy-Net/fs-rpc?rev=e3871c3b2438fae23fdc1eb6c72dd7c125f21abd#e3871c3b2438fae23fdc1eb6c72dd7c125f21abd"
 dependencies = [
  "capnp",
  "capnp-rpc",
@@ -644,7 +644,7 @@ dependencies = [
 [[package]]
 name = "fs-settings"
 version = "0.1.0"
-source = "git+https://github.com/FreeSynergy-Net/fs-components?rev=77b23ea3a3b2d788f5f60c62e975db9501a137ef#77b23ea3a3b2d788f5f60c62e975db9501a137ef"
+source = "git+https://github.com/FreeSynergy-Net/fs-components?rev=81367489094efee62ec16194be67df4a588045a0#81367489094efee62ec16194be67df4a588045a0"
 dependencies = [
  "async-trait",
  "fs-conformance",
@@ -671,7 +671,7 @@ dependencies = [
 [[package]]
 name = "fs-settings-rpc"
 version = "0.1.4"
-source = "git+https://github.com/FreeSynergy-Net/fs-rpc?rev=0f639470a7c1e5bbae5f84fbbbb41bf2504c232a#0f639470a7c1e5bbae5f84fbbbb41bf2504c232a"
+source = "git+https://github.com/FreeSynergy-Net/fs-rpc?rev=e3871c3b2438fae23fdc1eb6c72dd7c125f21abd#e3871c3b2438fae23fdc1eb6c72dd7c125f21abd"
 dependencies = [
  "capnp",
  "capnp-rpc",
@@ -709,7 +709,7 @@ dependencies = [
 [[package]]
 name = "fs-trusted-path"
 version = "0.1.4"
-source = "git+https://github.com/FreeSynergy-Net/fs-rpc?rev=0f639470a7c1e5bbae5f84fbbbb41bf2504c232a#0f639470a7c1e5bbae5f84fbbbb41bf2504c232a"
+source = "git+https://github.com/FreeSynergy-Net/fs-rpc?rev=e3871c3b2438fae23fdc1eb6c72dd7c125f21abd#e3871c3b2438fae23fdc1eb6c72dd7c125f21abd"
 dependencies = [
  "windows-sys 0.61.2",
 ]
