@@ -24,7 +24,7 @@ use fs_settings::{Place, Scope, SettingsStore};
 use fs_settings_rpc::SettingsCore;
 use fs_settings_server::{DbSettingsStore, SettingsWithForm};
 use guarded_support::{
-    AI, BOT_ID, PERSON_ID, WEEK, catalog, connect, ids, invoke, key, program, run, service,
+    AI, BOT_ID, PERSON_ID, WEEK, connect, ids, invoke, key, make_core, program, run, service,
     the_person, with_form,
 };
 
@@ -96,8 +96,7 @@ impl<M: ModuleCore> ModuleCore for Lax<M> {
 }
 
 /// The wrapper with the SAME ports as the program, over a core with the rules of `rules` (the real ones: `SettingsCore`; the wrong ones: `Lax`).
-fn lax(store: &Arc<DbSettingsStore>) -> Guarded<Lax<SettingsCore<DbSettingsStore>>> {
-    let core = SettingsCore::new(program(), catalog(), store.clone());
+fn lax(core: SettingsCore<DbSettingsStore>) -> Guarded<Lax<SettingsCore<DbSettingsStore>>> {
     let core = Lax {
         inner: core,
         rules: AllowAll,
@@ -122,8 +121,9 @@ fn a_bot_does_not_see_a_human_only_setting() {
     // The store is opened BEFORE the runtime (it has a runtime of its own).
     let dir = tempfile::tempdir().unwrap();
     let store = store(dir.path());
+    let core = make_core(&store);
     run(async {
-        let mut s = with_form(&store);
+        let mut s = with_form(&store, core);
         assert!(s.serves_form());
         let (bot, person) = (connect(&mut s, BOT_ID), connect(&mut s, PERSON_ID));
         assert!(
@@ -143,16 +143,18 @@ fn a_bot_cannot_set_a_human_only_setting() {
     // The store is opened BEFORE the runtime (it has a runtime of its own).
     let dir = tempfile::tempdir().unwrap();
     let store = store(dir.path());
+    let core = make_core(&store);
     run(async {
-        let mut s = with_form(&store);
+        let mut s = with_form(&store, core);
         let bot = connect(&mut s, BOT_ID);
         let refused = invoke(&bot, "value.set", AI, &[("value", "true")]).await;
         assert_eq!((refused.failed, refused.status), (true, 403), "{refused:?}");
     });
     assert!(!stored(&store, AI), "the store did not change");
     // a person sets it, the same call
+    let core = make_core(&store);
     run(async {
-        let mut s = with_form(&store);
+        let mut s = with_form(&store, core);
         let person = connect(&mut s, PERSON_ID);
         assert!(
             !invoke(&person, "value.set", AI, &[("value", "true")])
@@ -169,8 +171,9 @@ fn counter_rules_that_allow_everything_let_the_bot_in() {
     // The store is opened BEFORE the runtime (it has a runtime of its own).
     let dir = tempfile::tempdir().unwrap();
     let store = store(dir.path());
+    let core = make_core(&store);
     run(async {
-        let mut g = lax(&store);
+        let mut g = lax(core);
         let (bot, person) = (
             FromClientHook::new(g.bootstrap(&Caller::new(BOT_ID, None)).hook),
             FromClientHook::new(g.bootstrap(&Caller::new(PERSON_ID, None)).hook),
@@ -191,8 +194,9 @@ fn the_hub_runs_on_the_same_capability() {
     // The store is opened BEFORE the runtime (it has a runtime of its own).
     let dir = tempfile::tempdir().unwrap();
     let store = store(dir.path());
+    let core = make_core(&store);
     run(async {
-        let mut s = with_form(&store);
+        let mut s = with_form(&store, core);
         let hub: settings_hub::Client =
             FromClientHook::new(s.bootstrap(&Caller::new(PERSON_ID, None)).hook);
         let opened = hub.manage_request().send().promise.await.unwrap();
@@ -210,15 +214,15 @@ fn without_the_module_person_only_the_form_source_stays_off() {
     // The store is opened BEFORE the runtime (it has a runtime of its own).
     let dir = tempfile::tempdir().unwrap();
     let store = store(dir.path());
+    let core = make_core(&store);
     run(async {
         let told = std::cell::RefCell::new(Vec::<String>::new());
         let no_me: Result<FixedPerson, OwnerProblem> = Err(OwnerProblem::NoMe {
             hint: "create me".into(),
         });
-        let mut s =
-            SettingsWithForm::new(service(&store), store.clone(), program(), no_me, &|line| {
-                told.borrow_mut().push(line.to_owned());
-            });
+        let mut s = SettingsWithForm::new(service(&store), core, no_me, &|line| {
+            told.borrow_mut().push(line.to_owned());
+        });
         assert!(!s.serves_form());
         let told = told.borrow().clone();
         assert_eq!(told.len(), 1);

@@ -42,7 +42,7 @@ pub use clock::user_of;
 pub use clock::{Clock, OsUser, fixed_clock, system_clock, system_os_user};
 pub use db_index::{changes, to_set};
 pub use db_store::DbSettingsStore;
-pub use guarded::{SettingsWithForm, local_person, person_owner};
+pub use guarded::{SettingsWithForm, form_core, local_person, person_owner};
 pub use instance_cmd::{id_text, infer_raw, run_instance};
 pub use instance_source::{InstanceSource, NoInstance};
 pub use legacy::{LegacyEnv, LegacyLine, import_legacy};

@@ -11,7 +11,7 @@ use fs_module::conformance::run_conformance;
 use fs_module::{
     CommandKind, DeclaredCommand, DeclaredForm, FormSourceFixture, Param, Sample, Verify,
 };
-use guarded_support::{FORM, PERSON_ID, WEEK, connect, run, with_form};
+use guarded_support::{FORM, PERSON_ID, WEEK, connect, make_core, run, with_form};
 
 /// The suite's view of the settings module: one connection of a person (the fixture of fs-settings-rpc, on the database store).
 struct Fixture {
@@ -99,8 +99,9 @@ fn the_suite_level_1_passes_over_the_guarded_program() {
     // The store is opened BEFORE the runtime (it has a runtime of its own).
     let dir = tempfile::tempdir().unwrap();
     let store = Arc::new(support::open(&support::db_file(dir.path())));
+    let core = make_core(&store);
     run(async {
-        let mut s = with_form(&store);
+        let mut s = with_form(&store, core);
         let fx = Fixture {
             client: connect(&mut s, PERSON_ID),
         };

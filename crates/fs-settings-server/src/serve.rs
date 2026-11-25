@@ -12,7 +12,7 @@ use fs_settings_rpc::SettingsService;
 
 use crate::clock::system_clock;
 use crate::db_store::DbSettingsStore;
-use crate::guarded::{SettingsWithForm, local_person, person_owner};
+use crate::guarded::{SettingsWithForm, form_core, local_person, person_owner};
 use crate::instance_source::NoInstance;
 use crate::legacy::{LegacyEnv, LegacyLine, import_legacy};
 use crate::ports::{Coded, Health, ProgramName, SettingCode, SettingsStore};
@@ -172,6 +172,8 @@ pub fn serve(args: &[String]) -> Result<(), ServeError> {
     let person = local_person(&*person_owner(std::env::current_exe().ok().as_deref()));
     let program = ProgramName::new(PROGRAM)
         .map_err(|_| ServeError::Failed("serve-failed cause=program-name".into()))?;
+    // The core reads the store once: made here, outside the runtime of the loop (the store is sync over a runtime of its own).
+    let core = form_core(&service, Arc::clone(&shared), program);
     let identity = ServerIdentity::new(PROGRAM, env!("CARGO_PKG_VERSION"));
     let beat_socket = socket.clone();
     run_until_signal_callers(&socket, identity, move || async move {
@@ -179,13 +181,9 @@ pub fn serve(args: &[String]) -> Result<(), ServeError> {
         // THIS runtime: a loop that stands still stops ticking, so the host sees a hang and not a false "alive".
         keep_heartbeat(&beat_socket)?;
         // `Guarded::new` runs inside the `LocalSet` of the loop.
-        Ok(SettingsWithForm::new(
-            service,
-            shared,
-            program,
-            person,
-            &|line| eprintln!("{line}"),
-        ))
+        Ok(SettingsWithForm::new(service, core, person, &|line| {
+            eprintln!("{line}")
+        }))
     })
     .map_err(|e| ServeError::Failed(format!("serve-failed cause={e}")))
 }

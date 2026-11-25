@@ -10,8 +10,8 @@ use fs_interfaces::formsource_capnp::form_source;
 use fs_interfaces::owner::fake::person;
 use fs_rpc::{Caller, FixedPerson, PerConnection};
 use fs_settings::{Catalog, Declaration, GroupId, Kind, ProgramName, SettingKey, Value};
-use fs_settings_rpc::SettingsService;
-use fs_settings_server::{DbSettingsStore, SettingsWithForm};
+use fs_settings_rpc::{SettingsCore, SettingsService};
+use fs_settings_server::{DbSettingsStore, SettingsWithForm, form_core};
 use fs_types::PersonRef;
 
 pub const FORM: &str = "fields-in-groups@1.0.0";
@@ -64,9 +64,17 @@ pub fn service(store: &Arc<DbSettingsStore>) -> SettingsService<DbSettingsStore,
     svc
 }
 
-pub fn with_form(store: &Arc<DbSettingsStore>) -> SettingsWithForm {
+/// The core of the form source, made OUTSIDE the runtime (it reads the store once).
+pub fn make_core(store: &Arc<DbSettingsStore>) -> SettingsCore<DbSettingsStore> {
+    form_core(&service(store), store.clone(), program())
+}
+
+pub fn with_form(
+    store: &Arc<DbSettingsStore>,
+    core: SettingsCore<DbSettingsStore>,
+) -> SettingsWithForm {
     let person = Ok(FixedPerson(the_person()));
-    SettingsWithForm::new(service(store), store.clone(), program(), person, &|_| {})
+    SettingsWithForm::new(service(store), core, person, &|_| {})
 }
 
 /// A person: the transport names the id of the service's own user. A bot: an id the system could not turn into an actor.

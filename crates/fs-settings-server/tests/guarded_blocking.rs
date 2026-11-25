@@ -26,6 +26,15 @@ use guarded_support::{PERSON_ID, WEEK, catalog, connect, invoke, program, run, t
 /// How long a write lasts in this test: long enough for the loop to tick many times.
 const SLOW: Duration = Duration::from_millis(300);
 
+/// Like `run`, with timers (the ticker of the test needs them).
+fn run_timed<F: std::future::Future>(f: F) -> F::Output {
+    let rt = tokio::runtime::Builder::new_current_thread()
+        .enable_time()
+        .build()
+        .unwrap();
+    tokio::task::LocalSet::new().block_on(&rt, f)
+}
+
 struct Spy {
     inner: Arc<DbSettingsStore>,
     writes: Mutex<Vec<ThreadId>>,
@@ -52,7 +61,10 @@ impl SettingsStore for Spy {
         key: &SettingKey,
         raw: Option<&Raw>,
     ) -> Result<(), Coded<SettingCode>> {
-        self.writes.lock().unwrap().push(std::thread::current().id());
+        self.writes
+            .lock()
+            .unwrap()
+            .push(std::thread::current().id());
         std::thread::sleep(SLOW);
         self.inner.write(scope, place, profile, key, raw)
     }
@@ -77,8 +89,9 @@ fn a_set_over_the_form_source_does_not_stop_the_loop() {
         writes: Mutex::default(),
     });
     let loop_thread = std::thread::current().id();
-    let ticks = run(async {
-        let core = SettingsCore::new(program(), catalog(), spy.clone());
+    // made OUTSIDE the runtime: the core reads the store once
+    let core = SettingsCore::new(program(), catalog(), spy.clone());
+    let ticks = run_timed(async {
         let mut g = Guarded::new(core, Ports::new(OsUserIsPerson, FixedPerson(the_person())));
         let me = connect(&mut g, PERSON_ID);
         // a task of the same loop that ticks every 10 ms while the call lasts
@@ -114,7 +127,10 @@ fn without_a_place_for_the_module_person_the_owner_is_unreachable() {
     let problem = local_person(&*person_owner(None))
         .err()
         .expect("no place: no person");
-    assert!(matches!(problem, OwnerProblem::Unreachable { .. }), "{problem:?}");
+    assert!(
+        matches!(problem, OwnerProblem::Unreachable { .. }),
+        "{problem:?}"
+    );
 }
 
 /// An empty catalog is told once on start (stderr in the program), not silently served.
@@ -122,14 +138,14 @@ fn without_a_place_for_the_module_person_the_owner_is_unreachable() {
 fn an_empty_catalog_is_told_once() {
     let dir = tempfile::tempdir().unwrap();
     let db = Arc::new(support::open(&support::db_file(dir.path())));
+    let mut svc = fs_settings_rpc::SettingsService::new_os_user_is_person(db.clone(), None);
+    svc.catalog = fs_settings::Catalog::new();
+    let core = fs_settings_server::form_core(&svc, db.clone(), program());
     run(async {
         let told = std::cell::RefCell::new(Vec::<String>::new());
-        let mut svc = fs_settings_rpc::SettingsService::new_os_user_is_person(db.clone(), None);
-        svc.catalog = fs_settings::Catalog::new();
         let form = fs_settings_server::SettingsWithForm::new(
             svc,
-            db.clone(),
-            program(),
+            core,
             Ok(FixedPerson(the_person())),
             &|line| told.borrow_mut().push(line.to_owned()),
         );

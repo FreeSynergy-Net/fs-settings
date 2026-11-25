@@ -31,12 +31,14 @@ impl SettingsWithForm {
     /// The service `service` over `store`, with the settings of `program` as a guarded module when `person` is known. A person that
     /// is not known (`Err`) is told to `report` as `fs-settings: owner-...` and the form source stays off.
     ///
+    /// `core` is made BEFORE the loop starts, outside any runtime: `SettingsCore::new` reads the store once, and the database store
+    /// is sync over a runtime of its own (see [`form_core`]).
+    ///
     /// # Panics
     /// Outside a `LocalSet`: `Guarded::new` starts the pump of the change feed as a local task. Build it inside the program's `LocalSet`.
     pub fn new<P: PersonOfConnection + 'static>(
         service: SettingsService<DbSettingsStore, DbSettingsStore>,
-        store: Arc<DbSettingsStore>,
-        program: ProgramName,
+        core: SettingsCore<DbSettingsStore>,
         person: Result<P, OwnerProblem>,
         report: &dyn Fn(&str),
     ) -> Self {
@@ -48,11 +50,6 @@ impl SettingsWithForm {
                         "fs-settings: the catalog is empty (no program declares settings yet); the form source shows no setting",
                     );
                 }
-                let core = SettingsCore::new(
-                    program,
-                    service.catalog.clone(),
-                    store,
-                );
                 Some(Guarded::new(core, Ports::new(OsUserIsPerson, person)))
             }
             Err(why) => {
@@ -87,6 +84,17 @@ impl PerConnection for SettingsWithForm {
     fn refused(&mut self, why: &CallerError) {
         self.hub.refused(why);
     }
+}
+
+/// The core of the form source over `store`: the settings of `program` with the catalog of `service`. Call it OUTSIDE any runtime
+/// (before the loop): it reads the store once, and `DbSettingsStore` is sync over a runtime of its own.
+#[must_use]
+pub fn form_core(
+    service: &SettingsService<DbSettingsStore, DbSettingsStore>,
+    store: Arc<DbSettingsStore>,
+    program: ProgramName,
+) -> SettingsCore<DbSettingsStore> {
+    SettingsCore::new(program, service.catalog.clone(), store)
 }
 
 /// The owner source of the program that runs as `running`: the service of the module person on its usual socket (started from the
