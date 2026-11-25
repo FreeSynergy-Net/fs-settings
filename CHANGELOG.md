@@ -6,6 +6,8 @@ Version = tag; all crates of the workspace carry the same version.
 
 ### English
 
+- **Pin.** fs-components (package fs-settings) rev `4c515bf7` (was `06a77a6a`), fs-rpc and fs-settings-rpc rev `82d2ba19` (was `56f5cc39`). Written with the help of Claude (Anthropic).
+- **Auf Deutsch: Pin.** fs-components (Paket fs-settings) rev `4c515bf7` (war `06a77a6a`), fs-rpc und fs-settings-rpc rev `82d2ba19` (war `56f5cc39`). Geschrieben mit Hilfe von Claude (Anthropic).
 - **Pins lifted (rev on main SHAs).** fs-types and fs-conformance rev `722d3ce0` (0.0.7), fs-interfaces rev `2bb70d82` (0.2.0), fs-objects rev `e38093f1` (0.0.11), fs-components (package fs-settings) rev `9ab4ac28`; `.cargo/config.toml` names `[registries.freesynergy]`. No `non_exhaustive` break in this repo. fs-rpc, fs-settings-rpc (and fs-trusted-path through them) now rev `9cbce63c` (0.1.4, was tag v0.1.0): one stand per fs crate in the lock, `cargo tree -d` shows no fs-* duplicate.
 - **Licence gate.** Every path and git dependency carries a `version` (fs-types, fs-conformance 0.0.7; fs-objects 0.0.11; fs-settings 0.1.0; fs-rpc, fs-settings-rpc 0.1.4; fs-settings-server 0.0.1; fs-interfaces 0.2.0), so `cargo deny` finds no wildcard; `deny.toml` unchanged.
 - **CI pin.** `check.yml` and `windows.yml` call fs-release v0.0.18 (`9eed5c95`, was `485f747`): the lock gate of `485f747` still named the old org as the only source of `fs-types` and was red for every repo on the org FreeSynergy-Net.
