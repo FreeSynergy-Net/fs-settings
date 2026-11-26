@@ -4,6 +4,9 @@ Version = tag; all crates of the workspace carry the same version.
 
 ## Unreleased
 
+- Pin wave 14 (only pins and lock, no code, no version change): `fs-settings` (crate of repo fs-components) `rev 4a923bbc` (was `08d501d9`), `fs-rpc` and `fs-settings-rpc` `rev bfcb9d37` (was `7a656f45`), `fs-person-service` (fs-modules-person) `rev 99e0eba2` (was `bfebf590`; the new person pin carries new person code of its head along). The new components API still builds (`cargo check --workspace --all-targets --all-features --locked`); `cargo tree -d` shows no fs-* twice. Written with the help of Claude (Anthropic).
+- Auf Deutsch: Pin-Welle 14 (nur Pins und Lock, kein Code, keine Versionsänderung): `fs-settings` (Crate des Repos fs-components) `rev 4a923bbc` (war `08d501d9`), `fs-rpc` und `fs-settings-rpc` `rev bfcb9d37` (war `7a656f45`), `fs-person-service` (fs-modules-person) `rev 99e0eba2` (war `bfebf590`; der neue person-Pin zieht neuen person-Code seines Kopfes mit). Die neue Components-API baut weiter (`cargo check --workspace --all-targets --all-features --locked`); `cargo tree -d` zeigt kein fs-* doppelt. Geschrieben mit Hilfe von Claude (Anthropic).
+
 - Pin wave 13 (only pins and lock, no code, no version change): `fs-settings` (crate of repo fs-components) `rev 08d501d9` (was `f2e90244`), `fs-rpc` and `fs-settings-rpc` `rev 7a656f45` (was `dba7125f`), `fs-person-service` `rev bfebf590` (was `37683fdd`). `cargo tree -d` shows no fs-* twice. Written with the help of Claude (Anthropic).
 - Auf Deutsch: Pin-Welle 13 (nur Pins und Lock, kein Code, keine Versionsänderung): `fs-settings` (Crate des Repos fs-components) `rev 08d501d9` (war `f2e90244`), `fs-rpc` und `fs-settings-rpc` `rev 7a656f45` (war `dba7125f`), `fs-person-service` `rev bfebf590` (war `37683fdd`). `cargo tree -d` zeigt kein fs-* doppelt. Geschrieben mit Hilfe von Claude (Anthropic).
 
