@@ -726,7 +726,7 @@ dependencies = [
 [[package]]
 name = "fs-person"
 version = "0.0.1"
-source = "git+https://github.com/FreeSynergy-Net/fs-modules-person?rev=f529c2827f940ba17c6c7f54aab99ef5a7e88729#f529c2827f940ba17c6c7f54aab99ef5a7e88729"
+source = "git+https://github.com/FreeSynergy-Net/fs-modules-person?rev=f9325bba150a7c0c5eea3f25c80b83bb045cf9f4#f9325bba150a7c0c5eea3f25c80b83bb045cf9f4"
 dependencies = [
  "async-trait",
  "fs-interfaces",
@@ -750,7 +750,7 @@ dependencies = [
 [[package]]
 name = "fs-person-service"
 version = "0.0.1"
-source = "git+https://github.com/FreeSynergy-Net/fs-modules-person?rev=f529c2827f940ba17c6c7f54aab99ef5a7e88729#f529c2827f940ba17c6c7f54aab99ef5a7e88729"
+source = "git+https://github.com/FreeSynergy-Net/fs-modules-person?rev=f9325bba150a7c0c5eea3f25c80b83bb045cf9f4#f9325bba150a7c0c5eea3f25c80b83bb045cf9f4"
 dependencies = [
  "capnp",
  "capnp-rpc",

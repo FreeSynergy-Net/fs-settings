@@ -23,7 +23,7 @@ fs-conformance = { git = "https://github.com/FreeSynergy-Net/fs-types", rev = "7
 # The owner ("me") of the module person and the contract types of the form source: one source per library, the stand fs-rpc pins.
 fs-interfaces = { git = "https://github.com/FreeSynergy-Net/fs-interfaces", rev = "2354f440985bf4c82d0a725928f8576032a595c6", version = "0.3.0" }
 fs-module = { git = "https://github.com/FreeSynergy-Net/fs-interfaces", rev = "2354f440985bf4c82d0a725928f8576032a595c6", version = "0.3.0" }
-fs-person-service = { git = "https://github.com/FreeSynergy-Net/fs-modules-person", rev = "f529c2827f940ba17c6c7f54aab99ef5a7e88729", version = "0.0.1", features = ["client"] }
+fs-person-service = { git = "https://github.com/FreeSynergy-Net/fs-modules-person", rev = "f9325bba150a7c0c5eea3f25c80b83bb045cf9f4", version = "0.0.1", features = ["client"] }
 capnp = "0.27"
 tokio = { version = "1", features = ["rt", "macros", "time"] }
 serde = { version = "1", features = ["derive"] }
