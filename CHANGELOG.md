@@ -4,6 +4,9 @@ Version = tag; all crates of the workspace carry the same version.
 
 ## Unreleased
 
+- Pin wave 13 (only pins and lock, no code, no version change): `fs-settings` (crate of repo fs-components) `rev 08d501d9` (was `f2e90244`), `fs-rpc` and `fs-settings-rpc` `rev 7a656f45` (was `dba7125f`), `fs-person-service` `rev bfebf590` (was `37683fdd`). `cargo tree -d` shows no fs-* twice. Written with the help of Claude (Anthropic).
+- Auf Deutsch: Pin-Welle 13 (nur Pins und Lock, kein Code, keine Versionsänderung): `fs-settings` (Crate des Repos fs-components) `rev 08d501d9` (war `f2e90244`), `fs-rpc` und `fs-settings-rpc` `rev 7a656f45` (war `dba7125f`), `fs-person-service` `rev bfebf590` (war `37683fdd`). `cargo tree -d` zeigt kein fs-* doppelt. Geschrieben mit Hilfe von Claude (Anthropic).
+
 - Pin wave 12 (only pins and lock, no code): `fs-settings` (crate of repo fs-components) `rev f2e90244` (was `bd170fa0`), `fs-rpc` and `fs-settings-rpc` `rev dba7125f` (was `c0cbf7ad`; that head pins the same fs-components `f2e90244`), `fs-person-service` (fs-modules-person) `rev 37683fdd` (was `1d90b1d5`). The graph now holds ONE fs-components state (`f2e90244`); the lock gets, from cargo, the new package `fs-components-words` (a dependency of fs-settings). `cargo tree -d` shows no fs-* twice. Written with the help of Claude (Anthropic).
 - Auf Deutsch: Pin-Welle 12 (nur Pins und Lock, kein Code): `fs-settings` (Crate des Repos fs-components) `rev f2e90244` (war `bd170fa0`), `fs-rpc` und `fs-settings-rpc` `rev dba7125f` (war `c0cbf7ad`; dieser Kopf pinnt dasselbe fs-components `f2e90244`), `fs-person-service` (fs-modules-person) `rev 37683fdd` (war `1d90b1d5`). Der Graph enthält jetzt EINEN fs-components-Stand (`f2e90244`); das Lock bekommt, von cargo erzeugt, das neue Paket `fs-components-words` (Abhängigkeit von fs-settings). `cargo tree -d` zeigt kein fs-* doppelt. Geschrieben mit Hilfe von Claude (Anthropic).
 
